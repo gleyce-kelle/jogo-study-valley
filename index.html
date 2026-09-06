@@ -9,55 +9,105 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- Cabeçalho / Status do Jogador -->
-        <header class="panel status-bar">
-            <div class="player-info">
-                <h2>Lvl. <span id="level-display">1</span></h2>
-                <div class="xp-bar-container">
-                    <div id="xp-bar" class="xp-bar-fill"></div>
-                </div>
-                <p>XP: <span id="xp-display">0</span> / <span id="xp-needed">100</span></p>
+        
+        <header class="panel top-bar">
+            <div class="stats-group">
+                <div class="stat">❤️ Lvl. <span id="level-display">1</span></div>
+                <div class="stat">⭐ <span id="xp-display">0</span> XP</div>
+                <div class="stat">💰 <span id="coins-display">0</span></div>
             </div>
-            <div class="wallet">
-                <p>🪙 <span id="coins-display">0</span></p>
+            <div class="menu-group">
+                <button id="btn-stats" class="icon-btn">📊</button>
+                <button id="btn-settings" class="icon-btn">⚙️</button>
             </div>
         </header>
 
-        <!-- Área de Configuração e Timer -->
+        <section class="panel scenario">
+            <div id="feedback-layer"></div>
+            <div id="character" class="sprite idle"></div>
+        </section>
+
         <main class="panel timer-section">
-            <h1 id="session-status">Pronto para a jornada?</h1>
-            
+            <h2 id="session-status">Pronto para a jornada?</h2>
             <div class="time-display" id="time-display">25:00</div>
             
-            <div class="controls" id="controls">
-                <div class="input-group">
-                    <label for="study-time">Estudo (min):</label>
-                    <input type="number" id="study-time" value="25" min="1" max="120">
-                </div>
-                <div class="input-group">
-                    <label for="break-time">Pausa (min):</label>
-                    <input type="number" id="break-time" value="5" min="1" max="30">
-                </div>
-            </div>
-
             <div class="actions">
-                <button id="btn-start" class="btn primary">Iniciar Missão</button>
+                <button id="btn-start" class="btn primary">Iniciar Estudo</button>
                 <button id="btn-stop" class="btn danger" style="display: none;">Abortar</button>
             </div>
         </main>
+
+        <footer class="panel xp-section">
+            <div class="xp-bar-container">
+                <div id="xp-bar" class="xp-bar-fill"></div>
+            </div>
+            <div class="xp-text">XP: <span id="xp-current-level">0</span> / <span id="xp-needed">100</span></div>
+        </footer>
     </div>
 
-    <!-- Telas de Alerta / Modais do Jogo -->
+    <!-- Modais do Jogo -->
     <div id="game-modal" class="modal-overlay" style="display: none;">
         <div class="panel modal-box">
             <h2 id="modal-title">Título</h2>
-            <p id="modal-message">Mensagem do modal</p>
+            <p id="modal-message">Mensagem</p>
             <div id="modal-buttons" class="modal-actions"></div>
         </div>
     </div>
 
-    <!-- Scripts carregados em ordem de dependência -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="panel modal-box">
+            <h2>⚙️ Configurações</h2>
+            <div class="settings-content">
+                <div class="setting-row">
+                    <label>Estudo (min):</label>
+                    <input type="number" id="cfg-study-time" min="1" max="120">
+                </div>
+                <div class="setting-row">
+                    <label>Pausa (min):</label>
+                    <input type="number" id="cfg-break-time" min="1" max="30">
+                </div>
+                <div class="setting-row">
+                    <label>Sons Especiais:</label>
+                    <input type="checkbox" id="cfg-sound">
+                </div>
+                <div class="setting-row">
+                    <label>Volume:</label>
+                    <input type="range" id="cfg-volume" min="0.1" max="1" step="0.1">
+                </div>
+                <div class="setting-row">
+                    <label>Pausa Automática:</label>
+                    <input type="checkbox" id="cfg-auto-break">
+                </div>
+                <div class="setting-row">
+                    <label>Sessão Automática:</label>
+                    <input type="checkbox" id="cfg-auto-session">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="btn-close-settings" class="btn primary">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stats-modal" class="modal-overlay" style="display: none;">
+        <div class="panel modal-box">
+            <h2>📊 Estatísticas</h2>
+            <div class="stats-content">
+                <p>Nível Atual: <strong id="stat-level">0</strong></p>
+                <p>XP Acumulado: <strong id="stat-xp">0</strong></p>
+                <p>Moedas: <strong id="stat-coins">0</strong></p>
+                <p>Minutos Estudados: <strong id="stat-minutes">0</strong></p>
+                <p>Sessões Concluídas: <strong id="stat-sessions">0</strong></p>
+                <p>Maior Sessão: <strong id="stat-highest">0</strong> min</p>
+            </div>
+            <div class="modal-actions">
+                <button id="btn-close-stats" class="btn primary">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/storage.js"></script>
+    <script src="js/audio.js"></script>
     <script src="js/game.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/ui.js"></script>

@@ -1,122 +1,143 @@
 document.addEventListener('DOMContentLoaded', () => {
     Game.init();
+    
+    // Sync inputs with settings
+    const st = Game.state.settings;
+    UI.elements.cfgStudy.value = st.studyMinutes;
+    UI.elements.cfgBreak.value = st.breakMinutes;
+    UI.elements.cfgSound.checked = st.soundEnabled;
+    UI.elements.cfgVol.value = st.volume;
+    UI.elements.cfgAutoBreak.checked = st.autoStartBreak;
+    UI.elements.cfgAutoSession.checked = st.autoStartNextSession;
+    
     refreshUI();
 
-    UI.elements.btnStart.addEventListener('click', () => {
-        startStudySession();
+    // Click events
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => AudioFX.click());
     });
+
+    UI.elements.btnStart.addEventListener('click', startStudySession);
 
     UI.elements.btnStop.addEventListener('click', () => {
         if (Timer.isStudying) {
-            // Se abortar, calcula quantos minutos inteiros foram efetivamente focados antes de parar
             const secondsStudied = Timer.totalDuration - Timer.timeRemaining;
             const minutesStudied = Math.floor(secondsStudied / 60);
 
-            let message = "Tem certeza que deseja abortar a missão?";
-            if (minutesStudied > 0) {
-                message += `\nVocê focou por ${minutesStudied} minuto(s) completos e receberá ${minutesStudied} XP por isso.`;
-            } else {
-                message += "\nComo você não completou nem 1 minuto, nenhum XP será ganho.";
-            }
-
-            UI.showModal("Abortar Missão", message, [
-                { text: "Sim, abortar", class: "danger", onClick: () => {
+            let msg = "Deseja abortar? " + (minutesStudied > 0 ? `\nReceberá +${minutesStudied} XP.` : "");
+            UI.showModal("Abortar Missão", msg, [
+                { text: "Sim", class: "danger", onClick: () => {
                     Timer.stop();
-                    
-                    // Se estudou pelo menos 1 min, entrega a recompensa
-                    if (minutesStudied > 0) {
-                        const reward = Game.addReward(minutesStudied);
-                        
-                        if (reward.levelUps > 0) {
-                            UI.showModal(
-                                "Level Up!", 
-                                `Sessão abortada, mas você ganhou ${reward.xpGained} XP e subiu de Nível!`, 
-                                [{ text: "Ok", class: "primary", onClick: () => resetToIdle() }]
-                            );
-                            return; // Retorna para não chamar resetToIdle duas vezes
-                        }
-                    }
-                    resetToIdle();
+                    minutesStudied > 0 ? processRewards(minutesStudied, true) : resetToIdle();
                 }},
-                { text: "Continuar foco", class: "primary", onClick: () => {} } // Apenas fecha o modal
+                { text: "Não", class: "primary", onClick: () => {} }
             ]);
         } else {
-            // Se estiver na pausa e apertar o botão, apenas pula a pausa (Pausa não dá XP)
             Timer.stop();
             resetToIdle();
         }
     });
 
-    // Se o usuário mexer no tempo do input, atualiza o relógio na tela
-    UI.elements.studyTimeInput.addEventListener('change', refreshTimeDisplay);
+    // Menus
+    document.getElementById('btn-settings').addEventListener('click', () => UI.toggleSettings(true));
+    document.getElementById('btn-close-settings').addEventListener('click', () => {
+        Game.state.settings = {
+            studyMinutes: parseInt(UI.elements.cfgStudy.value) || 25,
+            breakMinutes: parseInt(UI.elements.cfgBreak.value) || 5,
+            soundEnabled: UI.elements.cfgSound.checked,
+            volume: parseFloat(UI.elements.cfgVol.value),
+            autoStartBreak: UI.elements.cfgAutoBreak.checked,
+            autoStartNextSession: UI.elements.cfgAutoSession.checked
+        };
+        Storage.save(Game.state);
+        UI.toggleSettings(false);
+        refreshTimeDisplay();
+    });
+
+    document.getElementById('btn-stats').addEventListener('click', () => {
+        document.getElementById('stat-level').innerText = Game.state.level;
+        document.getElementById('stat-xp').innerText = Game.state.xp;
+        document.getElementById('stat-coins').innerText = Game.state.coins;
+        document.getElementById('stat-minutes').innerText = Game.state.totalStudyMinutes;
+        document.getElementById('stat-sessions').innerText = Game.state.sessionsCompleted;
+        document.getElementById('stat-highest').innerText = Game.state.highestSession;
+        UI.toggleStats(true);
+    });
+    document.getElementById('btn-close-stats').addEventListener('click', () => UI.toggleStats(false));
 
     function startStudySession() {
         Timer.isStudying = true;
-        const currentStudyMinutes = parseInt(UI.elements.studyTimeInput.value) || 25;
-        
+        AudioFX.start();
         UI.setMode('studying');
-        
-        Timer.start(currentStudyMinutes, 
-            (timeRemaining) => UI.updateTime(timeRemaining),
-            () => handleSessionComplete(currentStudyMinutes)
+        Timer.start(Game.state.settings.studyMinutes, 
+            (time) => UI.updateTime(time), 
+            () => processRewards(Game.state.settings.studyMinutes, false)
         );
     }
 
     function startBreakSession() {
         Timer.isStudying = false;
-        const breakMinutes = parseInt(UI.elements.breakTimeInput.value) || 5;
-        
         UI.setMode('break');
-        
-        Timer.start(breakMinutes, 
-            (timeRemaining) => UI.updateTime(timeRemaining),
-            () => handleBreakComplete()
+        Timer.start(Game.state.settings.breakMinutes, 
+            (time) => UI.updateTime(time),
+            () => {
+                AudioFX.finish();
+                if (Game.state.settings.autoStartNextSession) {
+                    startStudySession();
+                } else {
+                    UI.showModal("Fim do Descanso", "Hora de voltar!", [{ text: "Continuar", class: "primary", onClick: () => resetToIdle() }]);
+                }
+            }
         );
     }
 
-    function handleSessionComplete(minutesStudied) {
-        const reward = Game.addReward(minutesStudied);
+    function processRewards(minutesStudied, wasAborted) {
+        AudioFX.finish();
+        const reward = Game.addReward(minutesStudied, !wasAborted);
         refreshUI();
         
-        let message = `Missão cumprida! Você ganhou ${reward.xpGained} XP.`;
+        UI.showFloatingText(`+${reward.xpGained} XP`, 'xp');
+        
         if (reward.levelUps > 0) {
-            message += `\nIncrível! Você subiu de nível e ganhou moedas!`;
+            setTimeout(() => {
+                AudioFX.levelUp();
+                UI.triggerLevelUpAnimation();
+                UI.showFloatingText(`NOVO NÍVEL!`, 'level');
+                setTimeout(() => {
+                    AudioFX.coin();
+                    UI.showFloatingText(`+${reward.coinsGained} Moedas`, 'coin');
+                }, 1000);
+            }, 1000);
         }
-        message += `\nDeseja descansar na fogueira (iniciar pausa)?`;
 
-        UI.showModal("Sucesso!", message, [
-            { text: "Iniciar Pausa", class: "primary", onClick: () => startBreakSession() },
-            { text: "Pular Pausa", class: "danger", onClick: () => resetToIdle() }
-        ]);
-    }
+        if (!wasAborted && Game.state.settings.autoStartBreak) {
+            startBreakSession();
+            return;
+        }
 
-    function handleBreakComplete() {
-        UI.showModal(
-            "Fim do Descanso",
-            "O fogo da fogueira apagou. Hora de voltar à sua jornada de estudos!",
-            [{ text: "Continuar", class: "primary", onClick: () => resetToIdle() }]
-        );
+        let title = wasAborted ? "Abortada" : "Concluída!";
+        let msg = `Ganhos: ${reward.xpGained} XP.`;
+        if (reward.levelUps > 0) msg += `\nLvl ${Game.state.level} alcançado! (+${reward.coinsGained} moedas)`;
+
+        if (!wasAborted) {
+            UI.showModal(title, msg, [
+                { text: "Pausa", class: "primary", onClick: () => startBreakSession() },
+                { text: "Pular", class: "danger", onClick: () => resetToIdle() }
+            ]);
+        } else {
+            UI.showModal(title, msg, [{ text: "Ok", class: "primary", onClick: () => resetToIdle() }]);
+        }
     }
 
     function resetToIdle() {
-        UI.setMode('idle');
-        refreshUI();
-        refreshTimeDisplay();
+        UI.setMode('idle'); refreshUI(); refreshTimeDisplay();
     }
-
     function refreshUI() {
-        UI.updateStats(
-            Game.state, 
-            Game.getXPForNextLevel(), 
-            Game.getTotalXPForLevel(Game.state.level)
-        );
+        UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
     }
-
     function refreshTimeDisplay() {
-        const mins = parseInt(UI.elements.studyTimeInput.value) || 25;
-        UI.updateTime(mins * 60);
+        UI.updateTime(Game.state.settings.studyMinutes * 60);
     }
     
-    // Configura o timer inicial ao carregar a página
     refreshTimeDisplay();
 });

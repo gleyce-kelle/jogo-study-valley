@@ -1,63 +1,49 @@
-// Configuração central da progressão de níveis
 const LEVEL_CONFIG = {
-    baseXP: 100,
-    increment: 50 // O acréscimo de XP exigido a cada novo nível
+    baseXP: 100, increment: 50, baseCoins: 5, coinIncrement: 5     
 };
 
 const Game = {
     state: {},
 
-    init: function() {
-        this.state = Storage.load();
-    },
+    init: function() { this.state = Storage.load(); },
 
-    // Calcula o TOTAL acumulado de XP necessário para chegar em um nível específico
     getTotalXPForLevel: function(level) {
-        if (level <= 1) return 0; // Nível 1 começa com 0 XP
-        
+        if (level <= 1) return 0;
         let totalXP = 0;
-        for (let i = 2; i <= level; i++) {
-            totalXP += LEVEL_CONFIG.baseXP + ((i - 2) * LEVEL_CONFIG.increment);
-        }
+        for (let i = 2; i <= level; i++) totalXP += LEVEL_CONFIG.baseXP + ((i - 2) * LEVEL_CONFIG.increment);
         return totalXP;
     },
 
-    // Retorna quanto XP total é necessário para o PRÓXIMO nível
-    getXPForNextLevel: function() {
-        return this.getTotalXPForLevel(this.state.level + 1);
-    },
+    getXPForNextLevel: function() { return this.getTotalXPForLevel(this.state.level + 1); },
+    getCoinsForLevel: function(newLevel) { return LEVEL_CONFIG.baseCoins + ((newLevel - 1) * LEVEL_CONFIG.coinIncrement); },
 
-    addReward: function(minutesStudied) {
-        // Regra: 1 minuto completo = 1 XP
+    addReward: function(minutesStudied, isCompletedSession) {
         const xpGained = Math.floor(minutesStudied); 
         
-        if (xpGained <= 0) {
-            return { xpGained: 0, levelUps: 0 };
+        if (xpGained > 0) {
+            this.state.xp += xpGained;
+            this.state.totalStudyMinutes += xpGained;
+            if (xpGained > this.state.highestSession) this.state.highestSession = xpGained;
         }
 
-        this.state.xp += xpGained;
+        if (isCompletedSession) this.state.sessionsCompleted += 1;
 
-        const levelUps = this.checkLevelUp();
-        Storage.save(this.state); // O XP é persistido aqui mesmo fechando a página
+        const levelUpData = this.checkLevelUp();
+        Storage.save(this.state); 
         
-        return { xpGained, levelUps };
+        return { xpGained, levelUps: levelUpData.levelsGained, coinsGained: levelUpData.coinsGained };
     },
 
     checkLevelUp: function() {
-        let levelsGained = 0;
+        let levelsGained = 0, coinsGained = 0;
         let nextLevelXP = this.getXPForNextLevel();
         
-        // Verifica se subiu múltiplos níveis de uma vez (caso acumule muito XP)
         while (this.state.xp >= nextLevelXP) {
-            this.state.level++;
-            levelsGained++;
-            
-            // Recompensa futura: Dar moedas ao subir de nível
-            this.state.coins += this.state.level * 5; 
-            
+            this.state.level++; levelsGained++;
+            const coinsForThisLevel = this.getCoinsForLevel(this.state.level);
+            this.state.coins += coinsForThisLevel; coinsGained += coinsForThisLevel;
             nextLevelXP = this.getXPForNextLevel();
         }
-        
-        return levelsGained;
+        return { levelsGained, coinsGained };
     }
 };
