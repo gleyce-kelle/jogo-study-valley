@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     refreshUI();
 
+    let tempAvatarId = Game.state.avatarId;
+
     document.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('mousedown', () => AudioFX.click());
     });
@@ -47,6 +49,40 @@ document.addEventListener('DOMContentLoaded', () => {
             resetToIdle();
         }
     });
+
+    /* Eventos do Modal de Perfil */
+    document.getElementById('btn-profile').addEventListener('click', () => {
+        tempAvatarId = Game.state.avatarId;
+        updateProfileModalUI();
+        UI.toggleProfile(true);
+    });
+
+    document.querySelectorAll('.avatar-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            tempAvatarId = parseInt(e.target.getAttribute('data-value'));
+            updateProfileModalUI();
+        });
+    });
+
+    document.getElementById('btn-save-profile').addEventListener('click', () => {
+        Game.state.avatarId = tempAvatarId;
+        Storage.save(Game.state);
+        refreshUI();
+        UI.toggleProfile(false);
+    });
+
+    function updateProfileModalUI() {
+        UI.renderAvatar(UI.elements.avatarPreview, tempAvatarId);
+
+        document.querySelectorAll('.avatar-btn').forEach(btn => {
+            const value = parseInt(btn.getAttribute('data-value'));
+            if (tempAvatarId === value) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
 
     document.getElementById('btn-settings').addEventListener('click', () => UI.toggleSettings(true));
     document.getElementById('btn-close-settings').addEventListener('click', () => {

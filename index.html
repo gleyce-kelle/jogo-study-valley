@@ -17,6 +17,7 @@
                 <div class="stat" aria-label="Moedas">💰 <span id="coins-display">0</span></div>
             </div>
             <div class="menu-group">
+                <button id="btn-profile" class="icon-btn" aria-label="Personalizar personagem">👤</button>
                 <button id="btn-stats" class="icon-btn" aria-label="Abrir estatísticas">📊</button>
                 <button id="btn-settings" class="icon-btn" aria-label="Abrir configurações">⚙️</button>
             </div>
@@ -24,7 +25,8 @@
 
         <section class="panel scenario" aria-hidden="true">
             <div id="feedback-layer"></div>
-            <div id="character" class="sprite idle"></div>
+            <!-- Avatar estático -->
+            <div id="character" class="sprite avatar-1 idle"></div>
         </section>
 
         <main class="panel timer-section" aria-live="polite">
@@ -105,6 +107,32 @@
             </div>
             <div class="modal-actions">
                 <button id="btn-close-stats" class="btn primary" aria-label="Fechar estatísticas">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil / Personalização Simplificada -->
+    <div id="profile-modal" class="modal-overlay" style="display: none;">
+        <div class="panel modal-box profile-box">
+            <h2>👤 Escolha seu Avatar</h2>
+            
+            <div class="profile-preview-area">
+                <div id="avatar-preview" class="sprite avatar-1 idle"></div>
+            </div>
+
+            <div class="profile-options">
+                <div class="option-group">
+                    <label>Opções disponíveis:</label>
+                    <div class="option-buttons">
+                        <button class="opt-btn avatar-btn" data-value="1">Avatar 1</button>
+                        <button class="opt-btn avatar-btn" data-value="2">Avatar 2</button>
+                        <button class="opt-btn avatar-btn" data-value="3">Avatar 3</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="btn-save-profile" class="btn primary" aria-label="Salvar avatar">Salvar Alterações</button>
             </div>
         </div>
     </div>

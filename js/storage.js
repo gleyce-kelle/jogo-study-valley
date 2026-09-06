@@ -8,6 +8,7 @@ const Storage = {
         totalStudyMinutes: 0,
         sessionsCompleted: 0,
         highestSession: 0,
+        avatarId: 1, // 1, 2 ou 3
         settings: {
             studyMinutes: 25,
             breakMinutes: 5,
