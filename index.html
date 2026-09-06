@@ -8,36 +8,39 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="game-container">
+    <div id="game-container" role="main">
         
-        <header class="panel top-bar">
+        <header class="panel top-bar" aria-label="Status do jogador">
             <div class="stats-group">
-                <div class="stat">❤️ Lvl. <span id="level-display">1</span></div>
-                <div class="stat">⭐ <span id="xp-display">0</span> XP</div>
-                <div class="stat">💰 <span id="coins-display">0</span></div>
+                <div class="stat" aria-label="Nível">❤️ Lvl. <span id="level-display">1</span></div>
+                <div class="stat" aria-label="Experiência">⭐ <span id="xp-display">0</span> XP</div>
+                <div class="stat" aria-label="Moedas">💰 <span id="coins-display">0</span></div>
             </div>
             <div class="menu-group">
-                <button id="btn-stats" class="icon-btn">📊</button>
-                <button id="btn-settings" class="icon-btn">⚙️</button>
+                <button id="btn-stats" class="icon-btn" aria-label="Abrir estatísticas">📊</button>
+                <button id="btn-settings" class="icon-btn" aria-label="Abrir configurações">⚙️</button>
             </div>
         </header>
 
-        <section class="panel scenario">
+        <section class="panel scenario" aria-hidden="true">
             <div id="feedback-layer"></div>
             <div id="character" class="sprite idle"></div>
         </section>
 
-        <main class="panel timer-section">
+        <main class="panel timer-section" aria-live="polite">
             <h2 id="session-status">Pronto para a jornada?</h2>
-            <div class="time-display" id="time-display">25:00</div>
+            <div class="time-display" id="time-display" aria-label="Tempo restante">25:00</div>
             
             <div class="actions">
-                <button id="btn-start" class="btn primary">Iniciar Estudo</button>
-                <button id="btn-stop" class="btn danger" style="display: none;">Abortar</button>
+                <button id="btn-start" class="btn primary" aria-label="Iniciar sessão de estudo">Iniciar Estudo</button>
+                <div id="active-actions" style="display: none; gap: 10px; width: 100%;">
+                    <button id="btn-pause-resume" class="btn warning" aria-label="Pausar ou continuar">Pausar</button>
+                    <button id="btn-stop" class="btn danger" aria-label="Abortar sessão">Abortar</button>
+                </div>
             </div>
         </main>
 
-        <footer class="panel xp-section">
+        <footer class="panel xp-section" aria-label="Progresso de nível">
             <div class="xp-bar-container">
                 <div id="xp-bar" class="xp-bar-fill"></div>
             </div>
@@ -84,7 +87,7 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button id="btn-close-settings" class="btn primary">Salvar</button>
+                <button id="btn-close-settings" class="btn primary" aria-label="Salvar configurações">Salvar</button>
             </div>
         </div>
     </div>
@@ -101,7 +104,7 @@
                 <p>Maior Sessão: <strong id="stat-highest">0</strong> min</p>
             </div>
             <div class="modal-actions">
-                <button id="btn-close-stats" class="btn primary">Fechar</button>
+                <button id="btn-close-stats" class="btn primary" aria-label="Fechar estatísticas">Fechar</button>
             </div>
         </div>
     </div>

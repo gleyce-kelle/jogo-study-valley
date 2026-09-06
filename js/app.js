@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     Game.init();
     
-    // Sync inputs with settings
     const st = Game.state.settings;
     UI.elements.cfgStudy.value = st.studyMinutes;
     UI.elements.cfgBreak.value = st.breakMinutes;
@@ -12,12 +11,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     refreshUI();
 
-    // Click events
     document.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('mousedown', () => AudioFX.click());
     });
 
     UI.elements.btnStart.addEventListener('click', startStudySession);
+
+    UI.elements.btnPauseResume.addEventListener('click', () => {
+        if (Timer.isPaused) {
+            Timer.resume();
+            UI.setMode('studying');
+            AudioFX.start();
+        } else {
+            Timer.pause();
+            UI.setMode('paused');
+            AudioFX.click();
+        }
+    });
 
     UI.elements.btnStop.addEventListener('click', () => {
         if (Timer.isStudying) {
@@ -38,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Menus
     document.getElementById('btn-settings').addEventListener('click', () => UI.toggleSettings(true));
     document.getElementById('btn-close-settings').addEventListener('click', () => {
         Game.state.settings = {
@@ -132,9 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetToIdle() {
         UI.setMode('idle'); refreshUI(); refreshTimeDisplay();
     }
+    
     function refreshUI() {
         UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
     }
+    
     function refreshTimeDisplay() {
         UI.updateTime(Game.state.settings.studyMinutes * 60);
     }

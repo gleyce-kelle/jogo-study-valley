@@ -15,7 +15,10 @@ const Storage = {
             volume: 0.5,
             autoStartBreak: false,
             autoStartNextSession: false
-        }
+        },
+        achievements: [],
+        inventory: [],
+        unlockedRewards: []
     },
 
     load: function() {

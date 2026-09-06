@@ -10,6 +10,8 @@ const UI = {
         sessionStatus: document.getElementById('session-status'),
         btnStart: document.getElementById('btn-start'),
         btnStop: document.getElementById('btn-stop'),
+        activeActions: document.getElementById('active-actions'),
+        btnPauseResume: document.getElementById('btn-pause-resume'),
         character: document.getElementById('character'),
         feedbackLayer: document.getElementById('feedback-layer'),
         modalOverlay: document.getElementById('game-modal'),
@@ -42,25 +44,34 @@ const UI = {
         this.elements.xpBar.style.width = `${Math.min(xpPercentage, 100)}%`;
     },
 
-    updateTime: function(seconds) { this.elements.timeDisplay.innerText = Timer.formatTime(seconds); },
+    updateTime: function(seconds) { 
+        this.elements.timeDisplay.innerText = Timer.formatTime(seconds); 
+    },
 
     setMode: function(mode) {
         if (mode === 'idle') {
             this.elements.sessionStatus.innerText = "Pronto para a jornada!";
             this.elements.btnStart.style.display = "block";
-            this.elements.btnStop.style.display = "none";
+            this.elements.activeActions.style.display = "none";
             this.elements.character.className = "sprite idle";
         } else if (mode === 'studying') {
             this.elements.sessionStatus.innerText = "Foco total!";
             this.elements.btnStart.style.display = "none";
-            this.elements.btnStop.style.display = "block";
+            this.elements.activeActions.style.display = "flex";
+            this.elements.btnPauseResume.innerText = "Pausar";
+            this.elements.btnPauseResume.style.display = "block";
             this.elements.btnStop.innerText = "Abortar";
             this.elements.character.className = "sprite studying";
             this.showFloatingText("Sessão iniciada!", "level");
+        } else if (mode === 'paused') {
+            this.elements.sessionStatus.innerText = "Pausado...";
+            this.elements.btnPauseResume.innerText = "Continuar";
+            this.elements.character.className = "sprite idle";
         } else if (mode === 'break') {
             this.elements.sessionStatus.innerText = "Descansando...";
             this.elements.btnStart.style.display = "none";
-            this.elements.btnStop.style.display = "block";
+            this.elements.activeActions.style.display = "flex";
+            this.elements.btnPauseResume.style.display = "none";
             this.elements.btnStop.innerText = "Pular Pausa";
             this.elements.character.className = "sprite idle";
         }
