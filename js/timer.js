@@ -1,8 +1,8 @@
 const Timer = {
     interval: null,
-    timeRemaining: 0,
+    endTime: 0,
     totalDuration: 0,
-    isStudying: false,
+    timeRemaining: 0,
     isPaused: false,
     
     onTickCallback: null,
@@ -12,6 +12,7 @@ const Timer = {
         this.stop();
         this.totalDuration = minutes * 60;
         this.timeRemaining = this.totalDuration;
+        this.endTime = Date.now() + (this.timeRemaining * 1000);
         this.isPaused = false;
         
         this.onTickCallback = onTick;
@@ -25,24 +26,33 @@ const Timer = {
             clearInterval(this.interval);
             this.interval = null;
             this.isPaused = true;
+            const remainingMs = this.endTime - Date.now();
+            this.timeRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
         }
     },
 
     resume: function() {
         if (this.timeRemaining > 0) {
             this.isPaused = false;
+            this.endTime = Date.now() + (this.timeRemaining * 1000);
             if (this.onTickCallback) this.onTickCallback(this.timeRemaining);
-            this.interval = setInterval(() => this.tick(), 1000);
+            this.interval = setInterval(() => this.tick(), 250);
         }
     },
 
     tick: function() {
-        this.timeRemaining--;
-        if (this.onTickCallback) this.onTickCallback(this.timeRemaining);
+        const remainingMs = this.endTime - Date.now();
+        this.timeRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
+        
+        if (this.onTickCallback) {
+            this.onTickCallback(this.timeRemaining);
+        }
 
         if (this.timeRemaining <= 0) {
             this.stop();
-            if (this.onCompleteCallback) this.onCompleteCallback();
+            if (this.onCompleteCallback) {
+                this.onCompleteCallback();
+            }
         }
     },
 
