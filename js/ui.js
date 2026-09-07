@@ -23,6 +23,9 @@ const UI = {
         settingsModal: document.getElementById('settings-modal'),
         statsModal: document.getElementById('stats-modal'),
         profileModal: document.getElementById('profile-modal'),
+        shopModal: document.getElementById('shop-modal'),
+        achievementsModal: document.getElementById('achievements-modal'),
+        achievementsList: document.getElementById('achievements-list'),
         
         cfgStudy: document.getElementById('cfg-study-time'),
         cfgBreak: document.getElementById('cfg-break-time'),
@@ -32,10 +35,62 @@ const UI = {
         cfgAutoSession: document.getElementById('cfg-auto-session')
     },
 
+    achievementsData: [
+        {
+            id: '100_minutos',
+            title: 'Foco de Aço',
+            desc: 'Estude por pelo menos 100 minutos no total.',
+            icon: 'assets/conquistas/100_minutos.png',
+            check: (state) => state.totalStudyMinutes >= 100,
+            getProgress: (state) => `${Math.min(state.totalStudyMinutes, 100)} / 100 min`
+        },
+        {
+            id: '10_sessoes',
+            title: 'Jornada Consistente',
+            desc: 'Complete 10 sessões de estudo.',
+            icon: 'assets/conquistas/10_sessoes.png',
+            check: (state) => state.sessionsCompleted >= 10,
+            getProgress: (state) => `${Math.min(state.sessionsCompleted, 10)} / 10 sessões`
+        },
+        {
+            id: 'lvl_10',
+            title: 'Mestre do Conhecimento',
+            desc: 'Alcance o Nível 10 de personagem.',
+            icon: 'assets/conquistas/lvl_10.png',
+            check: (state) => state.level >= 10,
+            getProgress: (state) => `Nível ${state.level} / 10`
+        }
+    ],
+
     renderAvatar: function(targetElement, avatarId) {
         if (!targetElement) return;
         const isStudying = targetElement.classList.contains('studying');
         targetElement.className = `sprite avatar-${avatarId} ${isStudying ? 'studying' : 'idle'}`;
+    },
+
+    renderAchievements: function(gameState) {
+        if (!this.elements.achievementsList) return;
+        this.elements.achievementsList.innerHTML = '';
+
+        this.achievementsData.forEach(ach => {
+            const isUnlocked = ach.check(gameState);
+            const card = document.createElement('div');
+            card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+            card.innerHTML = `
+                <div class="achievement-icon-wrapper">
+                    <img src="${ach.icon}" alt="${ach.title}">
+                    ${!isUnlocked ? '<span class="lock-overlay">🔒</span>' : ''}
+                </div>
+                <div class="achievement-info">
+                    <div class="achievement-title">${ach.title} ${isUnlocked ? '✨' : ''}</div>
+                    <div class="achievement-desc">${ach.desc}</div>
+                    <div class="achievement-progress">${isUnlocked ? '✓ Concluído!' : ach.getProgress(gameState)}</div>
+                </div>
+            `;
+
+            this.elements.achievementsList.appendChild(card);
+        });
     },
 
     updateStats: function(gameState, nextLevelTotalXP, currentLevelTotalXP) {
@@ -123,5 +178,12 @@ const UI = {
     
     toggleSettings: function(show) { this.elements.settingsModal.style.display = show ? 'flex' : 'none'; },
     toggleStats: function(show) { this.elements.statsModal.style.display = show ? 'flex' : 'none'; },
-    toggleProfile: function(show) { this.elements.profileModal.style.display = show ? 'flex' : 'none'; }
+    toggleProfile: function(show) { this.elements.profileModal.style.display = show ? 'flex' : 'none'; },
+    toggleShop: function(show) { this.elements.shopModal.style.display = show ? 'flex' : 'none'; },
+    toggleAchievements: function(show, gameState) {
+        if (show && gameState) {
+            this.renderAchievements(gameState);
+        }
+        this.elements.achievementsModal.style.display = show ? 'flex' : 'none';
+    }
 };

@@ -17,6 +17,8 @@
                 <div class="stat" aria-label="Moedas">💰 <span id="coins-display">0</span></div>
             </div>
             <div class="menu-group">
+                <button id="btn-achievements" class="icon-btn" aria-label="Abrir conquistas">🏆</button>
+                <button id="btn-shop" class="icon-btn" aria-label="Abrir loja">🛒</button>
                 <button id="btn-profile" class="icon-btn" aria-label="Personalizar personagem">👤</button>
                 <button id="btn-stats" class="icon-btn" aria-label="Abrir estatísticas">📊</button>
                 <button id="btn-settings" class="icon-btn" aria-label="Abrir configurações">⚙️</button>
@@ -56,6 +58,32 @@
             <h2 id="modal-title">Título</h2>
             <p id="modal-message">Mensagem</p>
             <div id="modal-buttons" class="modal-actions"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Loja (Em breve) -->
+    <div id="shop-modal" class="modal-overlay" style="display: none;">
+        <div class="panel modal-box">
+            <h2>🛒 Loja</h2>
+            <div class="settings-content">
+                <p style="text-align: center;">Em breve! Use suas moedas para comprar novos avatares, roupas e cenários.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="btn-close-shop" class="btn primary" aria-label="Fechar loja">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Conquistas -->
+    <div id="achievements-modal" class="modal-overlay" style="display: none;">
+        <div class="panel modal-box achievements-box">
+            <h2>🏆 Conquistas</h2>
+            <div id="achievements-list" class="achievements-list">
+                <!-- Conteúdo gerado dinamicamente pelo JS -->
+            </div>
+            <div class="modal-actions">
+                <button id="btn-close-achievements" class="btn primary" aria-label="Fechar conquistas">Fechar</button>
+            </div>
         </div>
     </div>
 

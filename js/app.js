@@ -84,6 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /* Eventos de Loja e Conquistas */
+    document.getElementById('btn-shop').addEventListener('click', () => UI.toggleShop(true));
+    document.getElementById('btn-close-shop').addEventListener('click', () => UI.toggleShop(false));
+
+    document.getElementById('btn-achievements').addEventListener('click', () => UI.toggleAchievements(true, Game.state));
+    document.getElementById('btn-close-achievements').addEventListener('click', () => UI.toggleAchievements(false));
+
+    /* Configurações e Estatísticas */
     document.getElementById('btn-settings').addEventListener('click', () => UI.toggleSettings(true));
     document.getElementById('btn-close-settings').addEventListener('click', () => {
         Game.state.settings = {
@@ -110,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('btn-close-stats').addEventListener('click', () => UI.toggleStats(false));
 
+    /* Funções do Timer e Recompensas */
     function startStudySession() {
         Timer.isStudying = true;
         AudioFX.start();

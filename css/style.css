@@ -153,6 +153,10 @@ button:focus-visible, input:focus-visible {
     display: flex; flex-direction: column; gap: 12px;
 }
 
+.achievements-box {
+    max-width: 420px;
+}
+
 .profile-preview-area {
     background: var(--color-scenario);
     border: 3px solid var(--color-panel-border);
@@ -189,6 +193,108 @@ button:focus-visible, input:focus-visible {
     background: var(--color-xp-fill);
     border-color: #000;
     font-weight: bold;
+}
+
+/* Estilos de Conquistas */
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 5px;
+    text-align: left;
+}
+
+.achievements-list::-webkit-scrollbar { width: 6px; }
+.achievements-list::-webkit-scrollbar-track { background: var(--color-xp-bg); }
+.achievements-list::-webkit-scrollbar-thumb { background: var(--color-panel-border); }
+
+.achievement-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 3px solid var(--color-panel-border);
+    padding: 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.achievement-card.unlocked {
+    background: rgba(251, 192, 45, 0.15);
+    border-color: var(--color-xp-fill);
+    box-shadow: inset 0 0 5px rgba(251, 192, 45, 0.3);
+}
+
+.achievement-icon-wrapper {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--color-panel-border);
+    border-radius: 4px;
+}
+
+.achievement-icon-wrapper img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    transition: filter 0.3s ease;
+}
+
+/* Efeito desbotado/bloqueado */
+.achievement-card.locked .achievement-icon-wrapper img {
+    filter: grayscale(100%) opacity(0.35) brightness(0.7);
+}
+
+.achievement-card.locked .lock-overlay {
+    position: absolute;
+    font-size: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-shadow: 1px 1px 2px #000;
+    pointer-events: none;
+}
+
+.achievement-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.achievement-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.achievement-card.locked .achievement-title {
+    color: #b0bec5;
+}
+
+.achievement-desc {
+    font-size: 16px;
+    color: #d7ccc8;
+    line-height: 1.1;
+}
+
+.achievement-progress {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--color-xp-fill);
+    margin-top: 4px;
+}
+
+.achievement-card.locked .achievement-progress {
+    color: #90a4ae;
 }
 
 .settings-content, .stats-content {
