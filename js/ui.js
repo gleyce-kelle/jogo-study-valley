@@ -10,6 +10,7 @@ const UI = {
         sessionStatus: document.getElementById('session-status'),
         btnStart: document.getElementById('btn-start'),
         btnStop: document.getElementById('btn-stop'),
+        btnMiniGames: document.getElementById('btn-mini-games'),
         activeActions: document.getElementById('active-actions'),
         btnPauseResume: document.getElementById('btn-pause-resume'),
         character: document.getElementById('character'),
@@ -26,6 +27,13 @@ const UI = {
         shopModal: document.getElementById('shop-modal'),
         achievementsModal: document.getElementById('achievements-modal'),
         achievementsList: document.getElementById('achievements-list'),
+
+        // Elementos da nova janela de conquista
+        achievementUnlockedModal: document.getElementById('achievement-unlocked-modal'),
+        unlockedAchName: document.getElementById('unlocked-achievement-name'),
+        unlockedAchXp: document.getElementById('unlocked-xp-val'),
+        unlockedAchCoins: document.getElementById('unlocked-coins-val'),
+        btnCollectAch: document.getElementById('btn-collect-achievement'),
         
         cfgStudy: document.getElementById('cfg-study-time'),
         cfgBreak: document.getElementById('cfg-break-time'),
@@ -38,25 +46,31 @@ const UI = {
     achievementsData: [
         {
             id: '100_minutos',
-            title: 'Foco de Aço',
-            desc: 'Estude por pelo menos 100 minutos no total.',
+            title: 'Estudou por 100 minutos',
+            desc: 'Concentre-se por pelo menos 100 minutos totais.',
             icon: 'assets/conquistas/100_minutos.png',
+            rewardXP: 5,
+            rewardCoins: 5,
             check: (state) => state.totalStudyMinutes >= 100,
             getProgress: (state) => `${Math.min(state.totalStudyMinutes, 100)} / 100 min`
         },
         {
             id: '10_sessoes',
-            title: 'Jornada Consistente',
-            desc: 'Complete 10 sessões de estudo.',
+            title: 'Estudou por 10 sessões',
+            desc: 'Complete 10 missões de estudo.',
             icon: 'assets/conquistas/10_sessoes.png',
+            rewardXP: 10,
+            rewardCoins: 10,
             check: (state) => state.sessionsCompleted >= 10,
             getProgress: (state) => `${Math.min(state.sessionsCompleted, 10)} / 10 sessões`
         },
         {
             id: 'lvl_10',
-            title: 'Mestre do Conhecimento',
+            title: 'Atingiu Level 10',
             desc: 'Alcance o Nível 10 de personagem.',
             icon: 'assets/conquistas/lvl_10.png',
+            rewardXP: 100,
+            rewardCoins: 100,
             check: (state) => state.level >= 10,
             getProgress: (state) => `Nível ${state.level} / 10`
         }
@@ -71,9 +85,12 @@ const UI = {
     renderAchievements: function(gameState) {
         if (!this.elements.achievementsList) return;
         this.elements.achievementsList.innerHTML = '';
+        
+        // Garante que o array exista
+        if (!gameState.achievementsClaimed) gameState.achievementsClaimed = [];
 
         this.achievementsData.forEach(ach => {
-            const isUnlocked = ach.check(gameState);
+            const isUnlocked = gameState.achievementsClaimed.includes(ach.id);
             const card = document.createElement('div');
             card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
 
@@ -88,7 +105,6 @@ const UI = {
                     <div class="achievement-progress">${isUnlocked ? '✓ Concluído!' : ach.getProgress(gameState)}</div>
                 </div>
             `;
-
             this.elements.achievementsList.appendChild(card);
         });
     },
@@ -121,6 +137,7 @@ const UI = {
             this.elements.sessionStatus.innerText = "Pronto para a jornada!";
             this.elements.btnStart.style.display = "block";
             this.elements.activeActions.style.display = "none";
+            this.elements.btnMiniGames.style.display = "none";
             this.elements.character.className = `${avatarClass} idle`;
         } else if (mode === 'studying') {
             this.elements.sessionStatus.innerText = "Foco total!";
@@ -129,11 +146,13 @@ const UI = {
             this.elements.btnPauseResume.innerText = "Pausar";
             this.elements.btnPauseResume.style.display = "block";
             this.elements.btnStop.innerText = "Abortar";
+            this.elements.btnMiniGames.style.display = "none";
             this.elements.character.className = `${avatarClass} studying`;
             this.showFloatingText("Sessão iniciada!", "level");
         } else if (mode === 'paused') {
             this.elements.sessionStatus.innerText = "Pausado...";
             this.elements.btnPauseResume.innerText = "Continuar";
+            this.elements.btnMiniGames.style.display = "none";
             this.elements.character.className = `${avatarClass} idle`;
         } else if (mode === 'break') {
             this.elements.sessionStatus.innerText = "Descansando...";
@@ -141,6 +160,8 @@ const UI = {
             this.elements.activeActions.style.display = "flex";
             this.elements.btnPauseResume.style.display = "none";
             this.elements.btnStop.innerText = "Pular Pausa";
+            // MOSTRA O BOTÃO DE MINI GAMES APENAS NA PAUSA
+            this.elements.btnMiniGames.style.display = "block";
             this.elements.character.className = `${avatarClass} idle`;
         }
     },

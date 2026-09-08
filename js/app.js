@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     Game.init();
     
+    if (!Game.state.achievementsClaimed) Game.state.achievementsClaimed = [];
+
     const st = Game.state.settings;
     UI.elements.cfgStudy.value = st.studyMinutes;
     UI.elements.cfgBreak.value = st.breakMinutes;
@@ -50,6 +52,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- CONEXÃO DOS MINI-GAMES ---
+    const menuModal = document.getElementById('modal-minigames-menu');
+    
+    if (menuModal) {
+        const botoesMenu = menuModal.querySelectorAll('button');
+        botoesMenu.forEach(btn => {
+            const textoBtn = btn.innerText.toUpperCase();
+            
+            // Substitui o botão "(EM BREVE)" na posição correta
+            if (textoBtn.includes('EXPEDIÇÃO') && textoBtn.includes('BREVE')) {
+                btn.className = 'btn primary'; 
+                btn.disabled = false; 
+                btn.innerText = 'EXPEDIÇÃO DO FAMILIAR';
+                
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                
+                newBtn.addEventListener('click', () => {
+                    menuModal.style.display = 'none';
+                    if(window.ExpedicaoGame) window.ExpedicaoGame.start();
+                    const expModal = document.getElementById('modal-expedicao');
+                    if(expModal) expModal.style.display = 'flex';
+                });
+            } 
+            // Remove o botão duplicado inferior que continha o emoji da coruja
+            else if (textoBtn.includes('EXPEDIÇÃO') && textoBtn.includes('FAMILIAR') && !textoBtn.includes('BREVE')) {
+                if (btn.id !== 'btn-select-expedicao') {
+                    btn.remove();
+                }
+            }
+        });
+    }
+
+    UI.elements.btnMiniGames.addEventListener('click', () => {
+        if (menuModal) menuModal.style.display = 'flex';
+    });
+
+    document.getElementById('close-minigames-menu-btn').addEventListener('click', () => {
+        if (menuModal) menuModal.style.display = 'none';
+    });
+
+    document.getElementById('btn-select-forja').addEventListener('click', () => {
+        if (menuModal) menuModal.style.display = 'none';
+        document.getElementById('modal-forja').style.display = 'flex';
+    });
+
+    document.getElementById('close-forja-btn').addEventListener('click', () => {
+        document.getElementById('modal-forja').style.display = 'none';
+        if (menuModal) menuModal.style.display = 'flex';
+    });
+    // --- FIM DA CONEXÃO DOS MINI-GAMES ---
+
     /* Eventos do Modal de Perfil */
     document.getElementById('btn-profile').addEventListener('click', () => {
         tempAvatarId = Game.state.avatarId;
@@ -73,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateProfileModalUI() {
         UI.renderAvatar(UI.elements.avatarPreview, tempAvatarId);
-
         document.querySelectorAll('.avatar-btn').forEach(btn => {
             const value = parseInt(btn.getAttribute('data-value'));
             if (tempAvatarId === value) {
@@ -136,6 +189,21 @@ document.addEventListener('DOMContentLoaded', () => {
             (time) => UI.updateTime(time),
             () => {
                 AudioFX.finish();
+                
+                if (menuModal) menuModal.style.display = 'none';
+                document.getElementById('modal-forja').style.display = 'none';
+                
+                if (window.ForjaGame && typeof window.ForjaGame.stop === 'function') {
+                    window.ForjaGame.stop();
+                }
+                
+                if (window.ExpedicaoGame && typeof window.ExpedicaoGame.stop === 'function') {
+                    if (window.ExpedicaoGame.isActive && window.ExpedicaoGame.hp > 0) {
+                        window.ExpedicaoGame.endGame('cleared'); 
+                    }
+                    window.ExpedicaoGame.stop();
+                }
+
                 if (Game.state.settings.autoStartNextSession) {
                     startStudySession();
                 } else {
@@ -164,6 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
         }
 
+        checkAchievements();
+
         if (!wasAborted && Game.state.settings.autoStartBreak) {
             startBreakSession();
             return;
@@ -183,6 +253,64 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /* Sistema de Fila para Múltiplas Conquistas */
+    let achievementQueue = [];
+    let isShowingAchievement = false;
+
+    function checkAchievements() {
+        UI.achievementsData.forEach(ach => {
+            if (ach.check(Game.state) && !Game.state.achievementsClaimed.includes(ach.id) && !achievementQueue.includes(ach)) {
+                achievementQueue.push(ach);
+            }
+        });
+        processAchievementQueue();
+    }
+
+    function processAchievementQueue() {
+        if (isShowingAchievement || achievementQueue.length === 0) return;
+        
+        isShowingAchievement = true;
+        const ach = achievementQueue.shift(); 
+        
+        UI.elements.unlockedAchName.innerText = `"${ach.title}"`;
+        UI.elements.unlockedAchXp.innerText = ach.rewardXP;
+        UI.elements.unlockedAchCoins.innerText = ach.rewardCoins;
+        
+        const achModalContent = UI.elements.achievementUnlockedModal.querySelector('.modal-content');
+        if (achModalContent) {
+            achModalContent.removeAttribute('style'); 
+            achModalContent.className = 'modal-content'; 
+        }
+
+        UI.elements.achievementUnlockedModal.style.display = 'flex';
+        
+        const btnCollect = UI.elements.btnCollectAch;
+        const newBtn = btnCollect.cloneNode(true);
+        btnCollect.parentNode.replaceChild(newBtn, btnCollect);
+        UI.elements.btnCollectAch = newBtn; 
+
+        newBtn.addEventListener('click', () => {
+            AudioFX.coin(); 
+            
+            Game.state.xp += ach.rewardXP;
+            Game.state.coins += ach.rewardCoins;
+            Game.state.achievementsClaimed.push(ach.id);
+            
+            while (Game.state.xp >= Game.getXPForNextLevel()) {
+                Game.state.level++;
+            }
+
+            Storage.save(Game.state);
+            refreshUI();
+            
+            UI.elements.achievementUnlockedModal.style.display = 'none';
+            isShowingAchievement = false;
+            
+            checkAchievements(); 
+            processAchievementQueue();
+        });
+    }
+
     function resetToIdle() {
         UI.setMode('idle'); refreshUI(); refreshTimeDisplay();
     }
@@ -195,5 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
         UI.updateTime(Game.state.settings.studyMinutes * 60);
     }
     
+    checkAchievements();
     refreshTimeDisplay();
 });
