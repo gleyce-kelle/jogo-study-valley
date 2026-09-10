@@ -55,36 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CONEXÃO DOS MINI-GAMES ---
     const menuModal = document.getElementById('modal-minigames-menu');
     
-    if (menuModal) {
-        const botoesMenu = menuModal.querySelectorAll('button');
-        botoesMenu.forEach(btn => {
-            const textoBtn = btn.innerText.toUpperCase();
-            
-            // Substitui o botão "(EM BREVE)" na posição correta
-            if (textoBtn.includes('EXPEDIÇÃO') && textoBtn.includes('BREVE')) {
-                btn.className = 'btn primary'; 
-                btn.disabled = false; 
-                btn.innerText = 'EXPEDIÇÃO DO FAMILIAR';
-                
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-                
-                newBtn.addEventListener('click', () => {
-                    menuModal.style.display = 'none';
-                    if(window.ExpedicaoGame) window.ExpedicaoGame.start();
-                    const expModal = document.getElementById('modal-expedicao');
-                    if(expModal) expModal.style.display = 'flex';
-                });
-            } 
-            // Remove o botão duplicado inferior que continha o emoji da coruja
-            else if (textoBtn.includes('EXPEDIÇÃO') && textoBtn.includes('FAMILIAR') && !textoBtn.includes('BREVE')) {
-                if (btn.id !== 'btn-select-expedicao') {
-                    btn.remove();
-                }
-            }
-        });
-    }
-
     UI.elements.btnMiniGames.addEventListener('click', () => {
         if (menuModal) menuModal.style.display = 'flex';
     });
@@ -93,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (menuModal) menuModal.style.display = 'none';
     });
 
+    // Forja
     document.getElementById('btn-select-forja').addEventListener('click', () => {
         if (menuModal) menuModal.style.display = 'none';
         document.getElementById('modal-forja').style.display = 'flex';
@@ -100,8 +71,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('close-forja-btn').addEventListener('click', () => {
         document.getElementById('modal-forja').style.display = 'none';
+        if (window.ForjaGame && typeof window.ForjaGame.stop === 'function') {
+            window.ForjaGame.stop();
+        }
         if (menuModal) menuModal.style.display = 'flex';
     });
+    
+    // Expedição do Familiar
+    const btnSelectExpedicao = document.getElementById('btn-select-expedicao');
+    if (btnSelectExpedicao) {
+        btnSelectExpedicao.addEventListener('click', () => {
+            if (menuModal) menuModal.style.display = 'none';
+            const expModal = document.getElementById('modal-expedicao');
+            if (expModal) expModal.style.display = 'flex';
+        });
+    }
+
+    const btnStartExpedicao = document.getElementById('btn-start-expedicao');
+    if (btnStartExpedicao) {
+        btnStartExpedicao.addEventListener('click', () => {
+            if (window.ExpedicaoGame && typeof window.ExpedicaoGame.start === 'function') {
+                window.ExpedicaoGame.start();
+            }
+        });
+    }
+
+    const closeExpedicaoBtn = document.getElementById('close-expedicao-btn');
+    if (closeExpedicaoBtn) {
+        closeExpedicaoBtn.addEventListener('click', () => {
+            const expModal = document.getElementById('modal-expedicao');
+            if (expModal) expModal.style.display = 'none';
+            
+            if (window.ExpedicaoGame && typeof window.ExpedicaoGame.stop === 'function') {
+                window.ExpedicaoGame.stop();
+            }
+            if (menuModal) menuModal.style.display = 'flex';
+        });
+    }
+    
+    // --- Grimório Fragmentado ---
+    const btnSelectGrimorio = document.getElementById('btn-select-grimorio');
+    const modalGrimorio = document.getElementById('modal-grimorio');
+    const btnStartGrimorio = document.getElementById('btn-start-grimorio');
+    const closeGrimorioBtn = document.getElementById('close-grimorio-btn');
+
+    if (btnSelectGrimorio) {
+        btnSelectGrimorio.addEventListener('click', () => {
+            if (menuModal) menuModal.style.display = 'none';
+            if (modalGrimorio) modalGrimorio.style.display = 'flex';
+        });
+    }
+
+    if (btnStartGrimorio) {
+        btnStartGrimorio.addEventListener('click', () => {
+            if (window.GrimorioGame && typeof window.GrimorioGame.start === 'function') {
+                btnStartGrimorio.style.display = 'none'; 
+                window.GrimorioGame.start(() => {
+                    Game.state.xpMultiplier = 1.2; 
+                    setTimeout(() => {
+                        btnStartGrimorio.style.display = 'block';
+                        btnStartGrimorio.innerText = 'JOGAR NOVAMENTE';
+                    }, 2000);
+                });
+            }
+        });
+    }
+
+    if (closeGrimorioBtn) {
+        closeGrimorioBtn.addEventListener('click', () => {
+            if (modalGrimorio) modalGrimorio.style.display = 'none';
+            if (window.GrimorioGame && typeof window.GrimorioGame.stop === 'function') {
+                window.GrimorioGame.stop();
+            }
+            if (btnStartGrimorio) {
+                btnStartGrimorio.style.display = 'block';
+                btnStartGrimorio.innerText = 'INICIAR RESTAURAÇÃO';
+            }
+            if (menuModal) menuModal.style.display = 'flex';
+        });
+    }
     // --- FIM DA CONEXÃO DOS MINI-GAMES ---
 
     /* Eventos do Modal de Perfil */
@@ -192,6 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (menuModal) menuModal.style.display = 'none';
                 document.getElementById('modal-forja').style.display = 'none';
+                document.getElementById('modal-expedicao').style.display = 'none';
+                if (modalGrimorio) modalGrimorio.style.display = 'none';
                 
                 if (window.ForjaGame && typeof window.ForjaGame.stop === 'function') {
                     window.ForjaGame.stop();
@@ -202,6 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.ExpedicaoGame.endGame('cleared'); 
                     }
                     window.ExpedicaoGame.stop();
+                }
+
+                if (window.GrimorioGame && typeof window.GrimorioGame.stop === 'function') {
+                    window.GrimorioGame.stop();
                 }
 
                 if (Game.state.settings.autoStartNextSession) {

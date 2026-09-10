@@ -2,65 +2,59 @@
 
 ## 1. Visão Geral dos Contextos Delimidados (*Bounded Contexts*)
 
-O sistema é dividido em 5 contextos principais que interagem entre si para manter o fluxo de produtividade e gamificação:
+O sistema é estruturado em contextos bem definidos que interagem de forma desacoplada por meio do orquestrador (`app.js`):
 
 ```
 +-----------------------------------------------------------------------------------+
 |                                 APP.JS (Orquestrador)                             |
 +-----------------------------------------------------------------------------------+
-|                                    |                               |
-v                                    v                               v
-+-----------------------+           +----------------------+        +-----------------------+
-|    TIMER CONTEXT      |           | GAMIFICATION CONTEXT |        |  STORAGE / STATE      |
-| (Gerenciamento de     | --------> | (XP, Níveis, Moedas  | <----->|  CONTEXT              |
-|  Tempo e Foco)        |           |  e Conquistas)       |        | (Persistência Local)  |
-+-----------------------+           +----------------------+        +-----------------------+
-|                                    |                               |
-|                                    v                               |
-|                         +----------------------+                   |
-+-----------------------> |    UI / PRESENTATION | <-----------------+
-|     CONTEXT          |
-| (DOM, Modais, Avatares)|
-+----------------------+
-^
+|                   |                     |                      |
+v                   v                     v                      v
++------------+  +------------------+  +------------------+  +-----------------------+
+|   TIMER    |  |   GAMIFICATION   |  |  STORAGE / STATE |  |      MINI-GAMES       |
+|  CONTEXT   |  |     CONTEXT      |  |     CONTEXT      |  |        CONTEXT        |
+| (Contagem  |  | (XP, Buffs,      |  |  (Persistência   |  | (Forja, Expedição e   |
+| e Pausas)  |  |  Moedas, Level)  |  |     Local)       |  |  Grimório - Pausa)    |
++------------+  +------------------+  +------------------+  +-----------------------+
+|                   |                     |                      |
++-------------------+----------+----------+----------------------+
 |
-+----------------------+
-| MINI-GAMES CONTEXT   |
-| (Acesso na Pausa)    |
-+----------------------+
+v
++--------------------+
+| UI / PRESENTATION  |
+|      CONTEXT       |
+| (DOM, Modais, HUD) |
++------
 ```
-
 ## 2. Descrição Detalhada dos Contextos
 
 ### A. Contexto de Temporização (`timer.js`)
-* **Responsabilidade:** Gerenciar o fluxo temporal das sessões de estudo e pausas.
-* **Entidades/Estados:** Contagem regressiva em segundos, estados de execução (`studying`, `paused`, `break`, `idle`).
-* **Comunicação:** Emite sinais de conclusão para o orquestrador (`app.js`), que aciona as regras de recompensa.
+* **Responsabilidade:** Gerenciar a contagem regressiva e transições de ciclo de foco e descanso.
+* **Estados:** `studying`, `paused`, `break`, `idle`.
+* **Comunicação:** Dispara callbacks no término do tempo informando os minutos corridos para o `app.js`.
 
 ### B. Contexto de Gamificação (`game.js`)
-* **Responsabilidade:** Processar as regras de negócio de ganho de progressão e conquistas.
-* **Componentes:** 
-  * Cálculo dinâmico de XP e limiares de nível.
-  * Atribuição de moedas proporcionais ao tempo estudado.
-  * Validação de regras e fila de processamento de conquistas (`achievementQueue`).
-* **Comunicação:** Recebe dados de tempo concluído e atualiza o estado global do jogo.
+* **Responsabilidade:** Processar lógica de progressão, acúmulo de moedas, nível, conquistas e modificadores de estado (*Buffs*).
+* **Componentes:**
+  * Processador de recompensas (`addReward`) com suporte a modificadores (`MENTE_CLARA` = +20% XP).
+  * Fila de Conquistas (`checkAchievements`).
+* **Comunicação:** Recebe solicitações de atualização de progresso do `app.js` e persiste o novo estado no `Storage`.
 
 ### C. Contexto de Estado e Persistência (`storage.js`)
-* **Responsabilidade:** Garantir a durabilidade dos dados do usuário entre sessões do navegador.
-* **Componentes:** Interface de comunicação com o `localStorage` (salvamento e carregamento de XP, nível, moedas, avatares, histórico e configurações).
-* **Comunicação:** Fornece o estado inicial ao carregar a aplicação e recebe atualizações sempre que recompensas ou configurações são modificadas.
+* **Responsabilidade:** Garantir a durabilidade dos dados no `localStorage`.
+* **Dados Persistidos:** Nível, XP, Moedas, Minutos Totais, Sessões Concluídas, Avatar Selecionado, Configurações do Timer, Conquistas Resgatadas e Buff Ativo (`activeBuff`).
 
-### D. Contexto de Interface e Apresentação (`ui.js`)
-* **Responsabilidade:** Traduzir o estado técnico do sistema em elementos visuais amigáveis.
-* **Componentes:** 
-  * Atualização de barras de progresso e textos em tempo real.
-  * Renderização dinâmica de sprites de avatares (`idle`, `studying`).
-  * Gerenciamento de modais (Configurações, Estatísticas, Perfil, Loja e Notificações de Conquistas).
-* **Comunicação:** Escuta alterações de estado e redesenha a tela de acordo com o modo atual (Foco vs. Pausa).
+### D. Contexto de Entretenimento / Mini-Games (`minigames/`)
+* **Responsabilidade:** Prover experiências interativas de gameplay durante os intervalos de pausa.
+* **Componentes:**
+  * `ForjaGame`: Lógica rítmica de precisão.
+  * `ExpedicaoGame`: Loop de física 2D (gravidade, pulo e colisão).
+  * `GrimorioGame`: Validação de posicionamento matricial de peças.
+* **Comunicação:** Concede moedas diretamente ao `Game.state` ou define Buffs ativos ao vencer desafios.
 
-### E. Contexto de Entretenimento / Mini-Games (Expansão)
-* **Responsabilidade:** Fornecer entretenimento interativo durante os ciclos de descanso.
-* **Componentes:** Botão condicional de acesso rápido (`#btn-mini-games`) que só é renderizado quando o usuário entra no modo de pausa.
+### E. Contexto de Interface e Apresentação (`ui.js` & HTML/CSS)
+* **Responsabilidade:** Renderização do estado do sistema no DOM.
+* **Componentes:** Atualização da barra de XP, modal de conquistas, exibição do indicador de Buff (`#buff-display`), animação de números flutuantes e renderização de avatares.
 
 ---
 
@@ -68,8 +62,10 @@ v                                    v                               v
 
 | Origem | Destino | Tipo de Interação | Descrição |
 | :--- | :--- | :--- | :--- |
-| **Timer** | **App** | Evento de Conclusão (`callback`) | Informa que o ciclo de estudo terminou e envia os minutos acumulados. |
-| **App** | **Game** | Chamada de Método | Solicita o cálculo de recompensas (`addReward`) com base nos minutos estudados. |
-| **Game** | **Storage** | Persistência | Salva o novo estado atualizado (XP, Moedas, Nível, Conquistas) no navegador. |
-| **Game** | **UI** | Renderização | Atualiza a interface gráfica com os novos valores de XP e barra de progresso. |
-| **App** | **UI** | Mudança de Estado (`setMode`) | Altera visualmente a interface entre modo de foco, pausa ou descanso (exibindo ou ocultando o botão de mini-games). |
+| **Timer** | **App** | Callback de Conclusão | Notifica o fim da sessão de estudo/pausa enviando os minutos decorridos. |
+| **App** | **Game** | Chamada de Método | Executa `addReward(minutes, completed)`, calculando XP bônus caso haja Buff ativo. |
+| **GrimorioGame** | **Game** | Alteração de Estado | Define `activeBuff = 'MENTE_CLARA'` ao completar o quebra-cabeça. |
+| **ExpedicaoGame** | **Game** | Adição de Recurso | Adiciona moedas diretamente à carteira do jogador com base no score. |
+| **Game** | **Storage** | Persistência | Grava no `localStorage` após qualquer alteração em XP, moedas, nível ou buffs. |
+| **App** | **UI** | Atualização Visual | Atualiza textos, exibe/oculta o ícone `🔮 +20% XP` e gerencia abertura de modais. |
+| **App** | **MiniGames** | Controle de Execução | Dispara métodos `.start()` e `.stop()` dos mini-games ao abrir/fechar modais ou encerrar pausas. |

@@ -1,72 +1,81 @@
 # Documentação Técnica - Study Valley
 
 ## 1. Visão Geral do Projeto
-**Study Valley** é uma aplicação web gamificada de gerenciamento de tempo de estudo (baseada na Técnica Pomodoro) que combina produtividade com elementos clássicos de RPG. O sistema recompensa o usuário com Experiência (XP), Moedas (💰) e Conquistas (🏆) com base no tempo de estudo dedicado, além de permitir a personalização de avatares e futura integração com mini-games durante os intervalos.
+**Study Valley** é uma aplicação web gamificada de gerenciamento de tempo de estudo (baseada na Técnica Pomodoro) que combina produtividade com elementos clássicos de RPG. O sistema recompensa o usuário com Experiência (XP), Moedas (💰), Buffs/Feitiços (🔮) e Conquistas (🏆) com base no tempo de estudo dedicado, além de permitir a personalização de avatares e execução de mini-games interativos durante os intervalos de pausa.
 
----
 
 ## 2. Arquitetura e Estrutura de Arquivos
-O projeto é estruturado utilizando uma arquitetura modular em JavaScript nativo (Vanilla JS), HTML5 e CSS3, mantendo alta performance e sem dependências de frameworks externos.
+O projeto é estruturado utilizando uma arquitetura modular em JavaScript nativo (Vanilla JS), HTML5 e CSS3, sem dependências de frameworks externos.
 
 ```
 study-valley/
 │
-├── index.html          # Interface principal e estrutura de modais
+├── index.html                  # Interface principal, HUD e estrutura de modais
 ├── css/
-│   └── style.css       # Estilos globais, temas, animações e responsividade
+│   ├── style.css               # Estilos globais, temas, animações e responsividade
+│   └── minigames.css           # Estilos e layouts específicos dos mini-games
 └── js/
-    ├── app.js          # Orquestrador principal e controle de fluxo de eventos
-    ├── game.js         # Lógica central de regras de negócio, XP e níveis
-    ├── timer.js        # Gerenciamento de tempo (estudo e pausas)
-    ├── ui.js           # Renderização de elementos visuais e manipulação do DOM
-    ├── storage.js      # Persistência de dados locais (localStorage)
-    └── audio.js        # Gerenciamento de efeitos sonoros
-
+├── app.js                  # Orquestrador principal com seleção segura via DOM
+├── game.js                 # Lógica de regras de negócio, XP, níveis e Buffs
+├── timer.js                # Gerenciamento de tempo (estudo e pausas)
+├── ui.js                   # Renderização visual e manipulação do DOM
+├── storage.js              # Persistência de dados locais (localStorage)
+├── audio.js                # Gerenciamento de efeitos sonoros (Web Audio API)
+├── minigame-manager.js     # Gerenciador de inicialização dos mini-games
+└── minigames/
+├── forja.js            # Mini-game "A Forja da Concentração"
+├── expedicao.js        # Mini-game "Expedição do Familiar"
+└── grimorio.js         # Mini-game "O Grimório Fragmentado"
 ```
-
 ## 3. Descrição dos Módulos Principais
 
 ### `index.html`
-Responsável por estruturar a interface em formato de painéis retrô/pixel-art. Contém os elementos da barra superior (estatísticas e menus), a área do cenário (avatar), o cronômetro central e o sistema de modais (Configurações, Estatísticas, Perfil, Loja, Conquistas e Notificações de Conquistas Desbloqueadas).
+Estrutura a interface no formato retro/pixel-art. Contém:
+* **HUD Superior:** Nível, XP, Moedas, Indicador de Buff Ativo (`#buff-display`) e botões de navegação.
+* **Cenário:** Exibição dinâmica do avatar (`#character`).
+* **Timer Central:** Cronômetro com botões contextuais (Iniciar, Pausar, Abortar e Acesso aos Mini-games).
+* **Modais:** Perfil, Loja, Conquistas, Configurações, Estatísticas, Seleção de Mini-games e os Modais dedicados de cada Mini-game.
 
-### `style.css`
-Implementa a identidade visual inspirada em jogos clássicos (utilizando a fonte 'VT323'). Gerencia temas baseados em variáveis CSS (`:root`), estados visuais dos avatares (`idle`, `studying`), efeitos flutuantes (`floating-text`) e design responsivo otimizado para múltiplos tamanhos de tela.
+### `css/style.css` & `css/minigames.css`
+Gerenciam a identidade visual pixel-art (fonte 'VT323'). Tratam estilos de componentes RPG, barras de progresso, estados visuais de avatares, notificações flutuantes e grids/containers interativos para os mini-games.
 
 ### `js/app.js`
-Atua como o **Controller** principal da aplicação. Escuta eventos de clique, gerencia o fluxo de transição entre sessões de estudo, pausas e telas de descanso, e controla a fila síncrona de processamento de conquistas (`achievementQueue`).
+Atua como o **Controller** principal da aplicação. 
+* Utiliza busca direta no DOM (`document.getElementById`) com checagens defensivas (*failsafes*) para evitar travamentos por elementos ausentes.
+* Conecta os modais de navegação, configurações, perfis e o menu do Fliperama.
+* Gerencia o fluxo de alternância entre estados de Foco, Pausa, Aplicação de Buffs e Conclusão de Sessões.
+* Controla a fila síncrona de processamento de conquistas (`achievementQueue`).
 
 ### `js/game.js`
-Gerencia o estado global do jogo e o progresso do usuário:
-* Cálculo dinâmico do XP necessário para subir de nível.
-* Atribuição de recompensas de XP e Moedas proporcionais aos minutos estudados.
-* Registro de métricas cumulativas (minutos totais de estudo, sessões concluídas e recorde de maior sessão).
+Gerencia o estado global do jogo e a progressão do jogador:
+* Cálculo dinâmico do XP necessário para *Level Up*.
+* Processamento de recompensas com multiplicadores ativos (ex: Buffs).
+* Registro de estatísticas (minutos totais, sessões concluídas, maior sessão).
+* Gerenciamento do estado `activeBuff`.
 
-### `js/timer.js`
-Controla a contagem regressiva baseada em segundos utilizando `setInterval`. Gerencia os estados de execução, pausa e conclusão para os ciclos de foco e descanso.
-
-### `js/ui.js`
-Responsável pela manipulação do DOM e renderização de interface. Atualiza barras de progresso de XP, renderiza avatares dinamicamente, gerencia a abertura e fechamento de modais e lista o status de desbloqueio das conquistas.
+### `js/minigames/` (`forja.js`, `expedicao.js`, `grimorio.js`)
+Módulos autônomos que rodam no escopo do navegador (`window.*Game`):
+* **`forja.js`:** Desafio rítmico/temporal de precisão em barra deslizante.
+* **`expedicao.js`:** Runner 2D estilo *Endless Runner* em canvas/divs com gravidade e colisão em tempo real.
+* **`grimorio.js`:** Quebra-cabeça espacial de preenchimento de matriz 4x4 por peças de runas geométricas.
 
 ---
 
-## 4. Regras de Negócio e Sistemas de Gamificação
+## 4. Regras de Negócio e Gamificação
 
-### Sistema de Experiência (XP) e Níveis (`Lvl`)
-* Cada minuto de estudo concluído com sucesso converte-se em pontos de XP e Moedas de forma proporcional.
-* O limiar de XP escala por nível. Ao atingir o teto necessário, o nível do personagem é incrementado, disparando efeitos visuais e sonoros específicos de *Level Up*.
+### Sistema de XP, Níveis e Multiplicadores (Buffs)
+* Cada minuto de estudo concluído concede **10 XP** e moedas proporcionais (**1 moeda a cada 5 minutos**).
+* **Buff "Mente Clara" (`MENTE_CLARA`):** Obtido ao vencer o mini-game *O Grimório Fragmentado*. Concede **+20% de XP bônus** na conclusão da próxima sessão de estudo completa, sendo consumido imediatamente após o término.
+* O limiar de XP para subir de nível escala com `Nível * 100`.
+
+### Sistema de Mini-Games (Fliperama do Vale)
+Disponíveis exclusivamente durante o tempo de pausa do timer:
+1. **A Forja da Concentração:** O jogador deve acertar o cursor na zona verde 5 vezes para concluir a fabricação de equipamentos.
+2. **Expedição do Familiar:** Jogo de corrida e pulo onde o jogador controla o familiar para coletar moedas (+10 pontos cada) e desviar de obstáculos vermelhos. Pontos convertem-se em moedas ao final.
+3. **O Grimório Fragmentado:** Puzzle de encaixe onde peças geométricas rúnicas precisam preencher totalmente uma grade 4x4. A vitória concede o efeito de status **Feitiço da Mente Clara (+20% XP)**.
 
 ### Sistema de Conquistas (Achievements)
-O sistema monitora o estado global do usuário e dispara notificações modais imediatas através de uma fila de execução para evitar sobreposição de janelas:
-* **"Estudou por 100 minutos"**: Desbloqueado quando `totalStudyMinutes >= 100`. Recompensa: **5 XP** e **5 Moedas**.
-* **"Estudou por 10 sessões"**: Desbloqueado quando `sessionsCompleted >= 10`. Recompensa: **10 XP** e **10 Moedas**.
-* **"Atingiu Level 10"**: Desbloqueado quando `level >= 10`. Recompensa: **100 XP** e **100 Moedas**.
-
----
-
-## 5. Especificação de Interface da Pausa e Mini-Games
-Durante o ciclo de descanso, a interface oculta os botões de controle de foco e habilita o botão de acesso rápido aos mini-games (`#btn-mini-games`) estilizado com a classe dedicada `.btn.btn-rpg-destaque`.
-
-Conceitos estruturados para expansão futura:
-* **A Forja da Concentração**: Mini-game rítmico de *crafting* baseado no acerto de marcações temporais.
-* **Expedição do Familiar**: Aventura em texto baseada em tomadas de risco e gerenciamento de energia do pet.
-* **O Grimoire Fragmentado**: Puzzle espacial de encaixe de peças rúnicas sob restrição de tempo.
+Monitora continuamente os marcos do jogador e exibe modais através de uma fila síncrona:
+* **"Estudou por 100 minutos"**: `totalStudyMinutes >= 100` (Recompensa: 5 XP, 5 Moedas).
+* **"Estudou por 10 sessões"**: `sessionsCompleted >= 10` (Recompensa: 10 XP, 10 Moedas).
+* **"Atingiu Level 10"**: `level >= 10` (Recompensa: 100 XP, 100 Moedas).
