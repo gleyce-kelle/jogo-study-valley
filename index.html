@@ -28,7 +28,9 @@
 
         <section class="panel scenario" aria-hidden="true">
             <div id="feedback-layer"></div>
-            <!-- Avatar estático -->
+            <!-- Camada de móveis -->
+            <div id="furniture-layer"></div>
+            <!-- Avatar -->
             <div id="character" class="sprite avatar-1 idle"></div>
         </section>
 
@@ -66,6 +68,7 @@
 
     <!-- Modal de Seleção de Mini-Games -->
     <div id="modal-minigames-menu" class="modal-overlay" style="display: none;">
+        <!-- ... (Sem alterações no minigame) ... -->
         <div class="panel modal-box">
             <h2>🎮 Fliperama do Vale</h2>
             <div class="settings-content" style="text-align: center;">
@@ -82,80 +85,53 @@
         </div>
     </div>
 
-    <!-- Modal Específico: A Forja da Concentração -->
+    <!-- Modais Específicos dos Mini-games mantidos originais -->
     <div id="modal-forja" class="modal-overlay" style="display: none;">
         <div class="panel modal-box minigame-box" style="text-align: center;">
             <h2>A Forja da Concentração</h2>
             <div class="minigame-container" style="margin-top: 15px;">
                 <p style="margin-bottom: 15px;">Pressione <kbd>ESPAÇO</kbd> ou toque no botão quando o cursor estiver na zona verde!</p>
-                
-                <div class="forja-ui">
-                    <div id="forja-target" class="forja-target"></div>
-                    <div id="forja-cursor" class="forja-cursor"></div>
-                </div>
-                
-                <div class="forja-status" style="margin: 15px 0; font-size: 1.5rem; color: #f1c40f;">
-                    <span>Progresso da Peça: </span>
-                    <span id="forja-score">0 / 5</span>
-                </div>
-                
+                <div class="forja-ui"><div id="forja-target" class="forja-target"></div><div id="forja-cursor" class="forja-cursor"></div></div>
+                <div class="forja-status" style="margin: 15px 0; font-size: 1.5rem; color: #f1c40f;"><span>Progresso da Peça: </span><span id="forja-score">0 / 5</span></div>
                 <button id="btn-hit-forja" class="btn primary" style="width: 100%; padding: 10px; font-size: 1.2rem;">BATER O MARTELO!</button>
             </div>
-            <div class="modal-actions" style="margin-top: 20px;">
-                <button id="close-forja-btn" class="btn danger">Sair do Mini-game</button>
-            </div>
+            <div class="modal-actions" style="margin-top: 20px;"><button id="close-forja-btn" class="btn danger">Sair do Mini-game</button></div>
         </div>
     </div>
 
-    <!-- Modal Específico: Expedição do Familiar -->
     <div id="modal-expedicao" class="modal-overlay" style="display: none;">
         <div class="panel modal-box minigame-box" style="text-align: center;">
             <h2>Expedição do Familiar</h2>
             <div class="minigame-container" style="margin-top: 15px;">
                 <p style="margin-bottom: 15px;">Colete moedas e desvie dos obstáculos! (Pressione Espaço ou Clique no quadro escuro para pular)</p>
-                
-                <div id="expedicao-container" style="width: 100%; height: 200px; background: #2c3e50; position: relative; overflow: hidden; border: 2px solid #34495e; border-radius: 4px; margin-bottom: 15px; cursor: pointer;">
-                </div>
-                
-                <div class="expedicao-status" style="margin: 15px 0; font-size: 1.2rem; color: #f1c40f;">
-                    <span>Pontuação: </span>
-                    <span id="expedicao-score">0</span>
-                </div>
-                
-                <!-- BOTÃO ATUALIZADO COM VERIFICAÇÃO DE ERRO -->
-                <button id="btn-start-expedicao" class="btn primary" style="width: 100%; padding: 10px; font-size: 1.2rem;" onclick="if(window.ExpedicaoGame) { window.ExpedicaoGame.start(); } else { alert('ERRO: O arquivo expedicao.js não foi carregado! Verifique se ele está salvo na pasta js/minigames/.'); }">INICIAR EXPEDIÇÃO!</button>
+                <div id="expedicao-container" style="width: 100%; height: 200px; background: #2c3e50; position: relative; overflow: hidden; border: 2px solid #34495e; border-radius: 4px; margin-bottom: 15px; cursor: pointer;"></div>
+                <div class="expedicao-status" style="margin: 15px 0; font-size: 1.2rem; color: #f1c40f;"><span>Pontuação: </span><span id="expedicao-score">0</span></div>
+                <button id="btn-start-expedicao" class="btn primary" style="width: 100%; padding: 10px; font-size: 1.2rem;" onclick="if(window.ExpedicaoGame) { window.ExpedicaoGame.start(); }">INICIAR EXPEDIÇÃO!</button>
             </div>
-            <div class="modal-actions" style="margin-top: 20px;">
-                <button id="close-expedicao-btn" class="btn danger">Sair do Mini-game</button>
-            </div>
+            <div class="modal-actions" style="margin-top: 20px;"><button id="close-expedicao-btn" class="btn danger">Sair do Mini-game</button></div>
         </div>
     </div>
 
-    <!-- Modal Específico: O Grimório Fragmentado -->
     <div id="modal-grimorio" class="modal-overlay" style="display: none;">
         <div class="panel modal-box minigame-box" style="text-align: center;">
             <h2>O Grimório Fragmentado</h2>
             <div class="minigame-container" style="margin-top: 15px;">
                 <p style="margin-bottom: 15px;">Encaixe as peças perfeitamente no grid para restaurar o feitiço!</p>
-                
-                <!-- Container onde o jogo será injetado pelo grimorio.js -->
-                <div id="grimorio-container" style="width: 100%; min-height: 250px; position: relative; margin-bottom: 15px;">
-                </div>
-                
+                <div id="grimorio-container" style="width: 100%; min-height: 250px; position: relative; margin-bottom: 15px;"></div>
                 <button id="btn-start-grimorio" class="btn primary" style="width: 100%; padding: 10px; font-size: 1.2rem;">INICIAR RESTAURAÇÃO</button>
             </div>
-            <div class="modal-actions" style="margin-top: 20px;">
-                <button id="close-grimorio-btn" class="btn danger">Sair do Mini-game</button>
-            </div>
+            <div class="modal-actions" style="margin-top: 20px;"><button id="close-grimorio-btn" class="btn danger">Sair do Mini-game</button></div>
         </div>
     </div>
 
-    <!-- Demais Modais -->
+    <!-- MODAL DA LOJA ATUALIZADO -->
     <div id="shop-modal" class="modal-overlay" style="display: none;">
-        <div class="panel modal-box">
-            <h2>🛒 Loja</h2>
+        <div class="panel modal-box" style="max-width: 480px;">
+            <h2>🛒 Loja de Decoração</h2>
             <div class="settings-content">
-                <p style="text-align: center;">Em breve! Use suas moedas para comprar novos avatares.</p>
+                <div id="shop-grid" class="shop-grid">
+                    <!-- Os itens serão injetados via JavaScript aqui -->
+                </div>
             </div>
             <div class="modal-actions">
                 <button id="btn-close-shop" class="btn primary">Fechar</button>
@@ -248,6 +224,9 @@
     <script src="js/game.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/ui.js"></script>
+    <!-- Inclua o Shop.js antes do app.js -->
+    <script src="js/shop.js"></script> 
+    
     <script src="js/minigames/forja.js"></script>
     <script src="js/minigames/expedicao.js"></script>
     <script src="js/minigames/grimorio.js"></script>

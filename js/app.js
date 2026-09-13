@@ -1,6 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     Game.init();
     
+    // --- INICIALIZAÇÃO DA LOJA E CENÁRIO ---
+    Shop.init();
+    UI.renderFurniture(Game.state.equippedItems, Shop.catalog);
+    // ---------------------------------------
+
     if (!Game.state.achievementsClaimed) Game.state.achievementsClaimed = [];
 
     const st = Game.state.settings;
@@ -150,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (menuModal) menuModal.style.display = 'flex';
         });
     }
-    // --- FIM DA CONEXÃO DOS MINI-GAMES ---
 
     /* Eventos do Modal de Perfil */
     document.getElementById('btn-profile').addEventListener('click', () => {
@@ -185,9 +189,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* Eventos de Loja e Conquistas */
-    document.getElementById('btn-shop').addEventListener('click', () => UI.toggleShop(true));
-    document.getElementById('btn-close-shop').addEventListener('click', () => UI.toggleShop(false));
+    /* EVENTOS DA LOJA ATUALIZADOS */
+    document.getElementById('btn-shop').addEventListener('click', () => {
+        Shop.renderShop(); // Processa itens do inv. e desenha a loja toda vez que abrir
+        UI.toggleShop(true);
+    });
+    
+    document.getElementById('btn-close-shop').addEventListener('click', () => {
+        UI.toggleShop(false);
+    });
 
     document.getElementById('btn-achievements').addEventListener('click', () => UI.toggleAchievements(true, Game.state));
     document.getElementById('btn-close-achievements').addEventListener('click', () => UI.toggleAchievements(false));

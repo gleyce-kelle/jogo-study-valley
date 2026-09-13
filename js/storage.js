@@ -19,6 +19,7 @@ const Storage = {
         },
         achievements: [],
         inventory: [],
+        equippedItems: [], // <- NOVAS CAMADAS DE SALVAMENTO DE MÓVEIS
         unlockedRewards: []
     },
 

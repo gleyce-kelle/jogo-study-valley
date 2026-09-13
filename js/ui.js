@@ -16,6 +16,8 @@ const UI = {
         character: document.getElementById('character'),
         avatarPreview: document.getElementById('avatar-preview'),
         feedbackLayer: document.getElementById('feedback-layer'),
+        furnitureLayer: document.getElementById('furniture-layer'), // Novo
+        shopGrid: document.getElementById('shop-grid'), // Novo
         modalOverlay: document.getElementById('game-modal'),
         modalTitle: document.getElementById('modal-title'),
         modalMessage: document.getElementById('modal-message'),
@@ -28,7 +30,6 @@ const UI = {
         achievementsModal: document.getElementById('achievements-modal'),
         achievementsList: document.getElementById('achievements-list'),
 
-        // Elementos da nova janela de conquista
         achievementUnlockedModal: document.getElementById('achievement-unlocked-modal'),
         unlockedAchName: document.getElementById('unlocked-achievement-name'),
         unlockedAchXp: document.getElementById('unlocked-xp-val'),
@@ -44,36 +45,9 @@ const UI = {
     },
 
     achievementsData: [
-        {
-            id: '100_minutos',
-            title: 'Estudou por 100 minutos',
-            desc: 'Concentre-se por pelo menos 100 minutos totais.',
-            icon: 'assets/conquistas/100_minutos.png',
-            rewardXP: 5,
-            rewardCoins: 5,
-            check: (state) => state.totalStudyMinutes >= 100,
-            getProgress: (state) => `${Math.min(state.totalStudyMinutes, 100)} / 100 min`
-        },
-        {
-            id: '10_sessoes',
-            title: 'Estudou por 10 sessões',
-            desc: 'Complete 10 missões de estudo.',
-            icon: 'assets/conquistas/10_sessoes.png',
-            rewardXP: 10,
-            rewardCoins: 10,
-            check: (state) => state.sessionsCompleted >= 10,
-            getProgress: (state) => `${Math.min(state.sessionsCompleted, 10)} / 10 sessões`
-        },
-        {
-            id: 'lvl_10',
-            title: 'Atingiu Level 10',
-            desc: 'Alcance o Nível 10 de personagem.',
-            icon: 'assets/conquistas/lvl_10.png',
-            rewardXP: 100,
-            rewardCoins: 100,
-            check: (state) => state.level >= 10,
-            getProgress: (state) => `Nível ${state.level} / 10`
-        }
+        { id: '100_minutos', title: 'Estudou por 100 minutos', desc: 'Concentre-se por pelo menos 100 minutos totais.', icon: 'assets/conquistas/100_minutos.png', rewardXP: 5, rewardCoins: 5, check: (state) => state.totalStudyMinutes >= 100, getProgress: (state) => `${Math.min(state.totalStudyMinutes, 100)} / 100 min` },
+        { id: '10_sessoes', title: 'Estudou por 10 sessões', desc: 'Complete 10 missões de estudo.', icon: 'assets/conquistas/10_sessoes.png', rewardXP: 10, rewardCoins: 10, check: (state) => state.sessionsCompleted >= 10, getProgress: (state) => `${Math.min(state.sessionsCompleted, 10)} / 10 sessões` },
+        { id: 'lvl_10', title: 'Atingiu Level 10', desc: 'Alcance o Nível 10 de personagem.', icon: 'assets/conquistas/lvl_10.png', rewardXP: 100, rewardCoins: 100, check: (state) => state.level >= 10, getProgress: (state) => `Nível ${state.level} / 10` }
     ],
 
     renderAvatar: function(targetElement, avatarId) {
@@ -82,11 +56,26 @@ const UI = {
         targetElement.className = `sprite avatar-${avatarId} ${isStudying ? 'studying' : 'idle'}`;
     },
 
+    // NOVA FUNÇÃO: Renderiza os Móveis
+    renderFurniture: function(equippedIds, catalog) {
+        if (!this.elements.furnitureLayer) return;
+        this.elements.furnitureLayer.innerHTML = ''; // Limpa o quarto
+        
+        equippedIds.forEach(id => {
+            const item = catalog.find(i => i.id === id);
+            if (item) {
+                const el = document.createElement('div');
+                // Aplica as classes que vão ditar a posição e o Z-index
+                el.className = `furniture-item ${item.layer} ${item.posClass}`;
+                el.style.backgroundImage = `url('${item.img}')`;
+                this.elements.furnitureLayer.appendChild(el);
+            }
+        });
+    },
+
     renderAchievements: function(gameState) {
         if (!this.elements.achievementsList) return;
         this.elements.achievementsList.innerHTML = '';
-        
-        // Garante que o array exista
         if (!gameState.achievementsClaimed) gameState.achievementsClaimed = [];
 
         this.achievementsData.forEach(ach => {
@@ -126,9 +115,7 @@ const UI = {
         this.renderAvatar(this.elements.character, gameState.avatarId);
     },
 
-    updateTime: function(seconds) { 
-        this.elements.timeDisplay.innerText = Timer.formatTime(seconds); 
-    },
+    updateTime: function(seconds) { this.elements.timeDisplay.innerText = Timer.formatTime(seconds); },
 
     setMode: function(mode) {
         const avatarClass = this.elements.character.className.replace(/idle|studying/g, '').trim();
@@ -160,7 +147,6 @@ const UI = {
             this.elements.activeActions.style.display = "flex";
             this.elements.btnPauseResume.style.display = "none";
             this.elements.btnStop.innerText = "Pular Pausa";
-            // MOSTRA O BOTÃO DE MINI GAMES APENAS NA PAUSA
             this.elements.btnMiniGames.style.display = "block";
             this.elements.character.className = `${avatarClass} idle`;
         }
@@ -202,9 +188,7 @@ const UI = {
     toggleProfile: function(show) { this.elements.profileModal.style.display = show ? 'flex' : 'none'; },
     toggleShop: function(show) { this.elements.shopModal.style.display = show ? 'flex' : 'none'; },
     toggleAchievements: function(show, gameState) {
-        if (show && gameState) {
-            this.renderAchievements(gameState);
-        }
+        if (show && gameState) { this.renderAchievements(gameState); }
         this.elements.achievementsModal.style.display = show ? 'flex' : 'none';
     }
 };
