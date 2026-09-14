@@ -1,10 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
     Game.init();
     
-    // --- INICIALIZAÇÃO DA LOJA E CENÁRIO ---
     Shop.init();
-    UI.renderFurniture(Game.state.equippedItems, Shop.catalog);
-    // ---------------------------------------
+    UI.renderFurniture(Game.state.equippedItems, Shop.catalog, Game.state.furniturePositions);
+
+    if (UI.elements.btnSaveFurniture) {
+        UI.elements.btnSaveFurniture.addEventListener('click', () => {
+            const items = document.querySelectorAll('.furniture-item');
+            if (!Game.state.furniturePositions) Game.state.furniturePositions = {};
+            
+            items.forEach(el => {
+                const id = el.dataset.itemId;
+                if (id) {
+                    Game.state.furniturePositions[id] = {
+                        x: parseFloat(el.style.left) || 0,
+                        y: parseFloat(el.style.top) || 0
+                    };
+                }
+            });
+            
+            Storage.save(Game.state);
+            UI.elements.btnSaveFurniture.style.display = 'none';
+            UI.showFloatingText('Decoração salva!', 'xp');
+            AudioFX.coin(); 
+        });
+    }
 
     if (!Game.state.achievementsClaimed) Game.state.achievementsClaimed = [];
 
@@ -57,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- CONEXÃO DOS MINI-GAMES ---
     const menuModal = document.getElementById('modal-minigames-menu');
     
     UI.elements.btnMiniGames.addEventListener('click', () => {
@@ -68,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (menuModal) menuModal.style.display = 'none';
     });
 
-    // Forja
     document.getElementById('btn-select-forja').addEventListener('click', () => {
         if (menuModal) menuModal.style.display = 'none';
         document.getElementById('modal-forja').style.display = 'flex';
@@ -82,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (menuModal) menuModal.style.display = 'flex';
     });
     
-    // Expedição do Familiar
     const btnSelectExpedicao = document.getElementById('btn-select-expedicao');
     if (btnSelectExpedicao) {
         btnSelectExpedicao.addEventListener('click', () => {
@@ -114,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // --- Grimório Fragmentado ---
     const btnSelectGrimorio = document.getElementById('btn-select-grimorio');
     const modalGrimorio = document.getElementById('modal-grimorio');
     const btnStartGrimorio = document.getElementById('btn-start-grimorio');
@@ -156,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* Eventos do Modal de Perfil */
     document.getElementById('btn-profile').addEventListener('click', () => {
         tempAvatarId = Game.state.avatarId;
         updateProfileModalUI();
@@ -189,9 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* EVENTOS DA LOJA ATUALIZADOS */
     document.getElementById('btn-shop').addEventListener('click', () => {
-        Shop.renderShop(); // Processa itens do inv. e desenha a loja toda vez que abrir
+        Shop.renderShop(); 
         UI.toggleShop(true);
     });
     
@@ -202,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-achievements').addEventListener('click', () => UI.toggleAchievements(true, Game.state));
     document.getElementById('btn-close-achievements').addEventListener('click', () => UI.toggleAchievements(false));
 
-    /* Configurações e Estatísticas */
     document.getElementById('btn-settings').addEventListener('click', () => UI.toggleSettings(true));
     document.getElementById('btn-close-settings').addEventListener('click', () => {
         Game.state.settings = {
@@ -229,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('btn-close-stats').addEventListener('click', () => UI.toggleStats(false));
 
-    /* Funções do Timer e Recompensas */
     function startStudySession() {
         Timer.isStudying = true;
         AudioFX.start();
@@ -317,7 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /* Sistema de Fila para Múltiplas Conquistas */
     let achievementQueue = [];
     let isShowingAchievement = false;
 

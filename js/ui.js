@@ -16,8 +16,9 @@ const UI = {
         character: document.getElementById('character'),
         avatarPreview: document.getElementById('avatar-preview'),
         feedbackLayer: document.getElementById('feedback-layer'),
-        furnitureLayer: document.getElementById('furniture-layer'), // Novo
-        shopGrid: document.getElementById('shop-grid'), // Novo
+        furnitureLayer: document.getElementById('furniture-layer'), 
+        shopGrid: document.getElementById('shop-grid'),
+        btnSaveFurniture: document.getElementById('btn-save-furniture'),
         modalOverlay: document.getElementById('game-modal'),
         modalTitle: document.getElementById('modal-title'),
         modalMessage: document.getElementById('modal-message'),
@@ -56,21 +57,109 @@ const UI = {
         targetElement.className = `sprite avatar-${avatarId} ${isStudying ? 'studying' : 'idle'}`;
     },
 
-    // NOVA FUNÇÃO: Renderiza os Móveis
-    renderFurniture: function(equippedIds, catalog) {
+    dragState: {
+        isDragging: false,
+        element: null,
+        itemId: null,
+        offsetX: 0,
+        offsetY: 0
+    },
+
+    renderFurniture: function(equippedIds, catalog, positions = {}) {
         if (!this.elements.furnitureLayer) return;
-        this.elements.furnitureLayer.innerHTML = ''; // Limpa o quarto
+        this.elements.furnitureLayer.innerHTML = ''; 
         
-        equippedIds.forEach(id => {
-            const item = catalog.find(i => i.id === id);
+        const equippedList = equippedIds || (typeof Game !== 'undefined' && Game.state ? Game.state.equippedItems : []);
+        const itemCatalog = catalog || (typeof Shop !== 'undefined' ? Shop.catalog : []);
+        const itemPositions = positions || (typeof Game !== 'undefined' && Game.state ? Game.state.furniturePositions : {});
+
+        equippedList.forEach(id => {
+            const item = itemCatalog.find(i => i.id === id);
             if (item) {
-                const el = document.createElement('div');
-                // Aplica as classes que vão ditar a posição e o Z-index
-                el.className = `furniture-item ${item.layer} ${item.posClass}`;
-                el.style.backgroundImage = `url('${item.img}')`;
+                const el = document.createElement('img');
+                el.src = item.img;
+                el.alt = item.name;
+                el.className = `furniture-item ${item.layer || 'layer-base'}`;
+                el.dataset.itemId = id;
+
+                const pos = itemPositions[id] || { x: 50, y: 50 };
+                // Garante suporte tanto para posições em % quanto antigas em px
+                const posX = (pos.x !== undefined && pos.x <= 100) ? `${pos.x}%` : (pos.x ? `${pos.x}px` : '50%');
+                const posY = (pos.y !== undefined && pos.y <= 100) ? `${pos.y}%` : (pos.y ? `${pos.y}px` : '50%');
+                
+                el.style.left = posX;
+                el.style.top = posY;
+
+                el.addEventListener('mousedown', (e) => this.startDrag(e, el, id));
+                el.addEventListener('touchstart', (e) => this.startDrag(e, el, id), { passive: false });
+
                 this.elements.furnitureLayer.appendChild(el);
             }
         });
+    },
+
+    startDrag: function(e, element, itemId) {
+        if (e.type === 'touchstart') e.preventDefault();
+        
+        const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        
+        const rect = element.getBoundingClientRect();
+        
+        this.dragState.isDragging = true;
+        this.dragState.element = element;
+        this.dragState.itemId = itemId;
+        
+        // Offset a partir do centro do elemento para movimento suave
+        this.dragState.offsetX = clientX - (rect.left + rect.width / 2);
+        this.dragState.offsetY = clientY - (rect.top + rect.height / 2);
+
+        element.style.cursor = 'grabbing';
+        element.style.transition = 'none'; 
+
+        if (this.elements.btnSaveFurniture) {
+            this.elements.btnSaveFurniture.style.display = 'block';
+        }
+    },
+
+    handleDrag: function(e) {
+        if (!this.dragState.isDragging || !this.dragState.element) return;
+        
+        const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        
+        const parent = this.elements.furnitureLayer || this.dragState.element.parentElement;
+        if (!parent) return;
+        const parentRect = parent.getBoundingClientRect();
+        
+        // Calcula a nova posição relativa em porcentagem (%)
+        let posX = clientX - parentRect.left - this.dragState.offsetX;
+        let posY = clientY - parentRect.top - this.dragState.offsetY;
+
+        let pctX = (posX / parentRect.width) * 100;
+        let pctY = (posY / parentRect.height) * 100;
+
+        // Limita o movimento para manter o móvel dentro do cenário
+        pctX = Math.min(Math.max(pctX, 5), 95);
+        pctY = Math.min(Math.max(pctY, 10), 90);
+
+        this.dragState.element.style.left = `${pctX}%`;
+        this.dragState.element.style.top = `${pctY}%`;
+
+        // Atualiza a posição no estado do jogo
+        if (this.dragState.itemId && typeof Game !== 'undefined' && Game.state) {
+            if (!Game.state.furniturePositions) Game.state.furniturePositions = {};
+            Game.state.furniturePositions[this.dragState.itemId] = { x: pctX, y: pctY };
+        }
+    },
+
+    stopDrag: function() {
+        if (this.dragState.element) {
+            this.dragState.element.style.cursor = 'grab';
+        }
+        this.dragState.isDragging = false;
+        this.dragState.element = null;
+        this.dragState.itemId = null;
     },
 
     renderAchievements: function(gameState) {
@@ -99,62 +188,71 @@ const UI = {
     },
 
     updateStats: function(gameState, nextLevelTotalXP, currentLevelTotalXP) {
-        this.elements.level.innerText = gameState.level;
-        this.elements.xpTotal.innerText = gameState.xp;
-        this.elements.coins.innerText = gameState.coins;
+        if (this.elements.level) this.elements.level.innerText = gameState.level;
+        if (this.elements.xpTotal) this.elements.xpTotal.innerText = gameState.xp;
+        if (this.elements.coins) this.elements.coins.innerText = gameState.coins;
 
         const xpProgressInLevel = gameState.xp - currentLevelTotalXP;
         const xpRequiredForThisLevel = nextLevelTotalXP - currentLevelTotalXP;
         
-        this.elements.xpCurrentLevel.innerText = xpProgressInLevel;
-        this.elements.xpNeeded.innerText = xpRequiredForThisLevel;
+        if (this.elements.xpCurrentLevel) this.elements.xpCurrentLevel.innerText = xpProgressInLevel;
+        if (this.elements.xpNeeded) this.elements.xpNeeded.innerText = xpRequiredForThisLevel;
 
         let xpPercentage = xpRequiredForThisLevel > 0 ? (xpProgressInLevel / xpRequiredForThisLevel) * 100 : 0;
-        this.elements.xpBar.style.width = `${Math.min(xpPercentage, 100)}%`;
+        if (this.elements.xpBar) this.elements.xpBar.style.width = `${Math.min(xpPercentage, 100)}%`;
 
-        this.renderAvatar(this.elements.character, gameState.avatarId);
+        if (this.elements.character) this.renderAvatar(this.elements.character, gameState.avatarId);
     },
 
-    updateTime: function(seconds) { this.elements.timeDisplay.innerText = Timer.formatTime(seconds); },
+    updateTime: function(seconds) { 
+        if (this.elements.timeDisplay && typeof Timer !== 'undefined') {
+            this.elements.timeDisplay.innerText = Timer.formatTime(seconds); 
+        }
+    },
 
     setMode: function(mode) {
+        if (!this.elements.character) return;
         const avatarClass = this.elements.character.className.replace(/idle|studying/g, '').trim();
 
         if (mode === 'idle') {
-            this.elements.sessionStatus.innerText = "Pronto para a jornada!";
-            this.elements.btnStart.style.display = "block";
-            this.elements.activeActions.style.display = "none";
-            this.elements.btnMiniGames.style.display = "none";
+            if (this.elements.sessionStatus) this.elements.sessionStatus.innerText = "Pronto para a jornada!";
+            if (this.elements.btnStart) this.elements.btnStart.style.display = "block";
+            if (this.elements.activeActions) this.elements.activeActions.style.display = "none";
+            if (this.elements.btnMiniGames) this.elements.btnMiniGames.style.display = "none";
             this.elements.character.className = `${avatarClass} idle`;
         } else if (mode === 'studying') {
-            this.elements.sessionStatus.innerText = "Foco total!";
-            this.elements.btnStart.style.display = "none";
-            this.elements.activeActions.style.display = "flex";
-            this.elements.btnPauseResume.innerText = "Pausar";
-            this.elements.btnPauseResume.style.display = "block";
-            this.elements.btnStop.innerText = "Abortar";
-            this.elements.btnMiniGames.style.display = "none";
+            if (this.elements.sessionStatus) this.elements.sessionStatus.innerText = "Foco total!";
+            if (this.elements.btnStart) this.elements.btnStart.style.display = "none";
+            if (this.elements.activeActions) this.elements.activeActions.style.display = "flex";
+            if (this.elements.btnPauseResume) {
+                this.elements.btnPauseResume.innerText = "Pausar";
+                this.elements.btnPauseResume.style.display = "block";
+            }
+            if (this.elements.btnStop) this.elements.btnStop.innerText = "Abortar";
+            if (this.elements.btnMiniGames) this.elements.btnMiniGames.style.display = "none";
             this.elements.character.className = `${avatarClass} studying`;
             this.showFloatingText("Sessão iniciada!", "level");
         } else if (mode === 'paused') {
-            this.elements.sessionStatus.innerText = "Pausado...";
-            this.elements.btnPauseResume.innerText = "Continuar";
-            this.elements.btnMiniGames.style.display = "none";
+            if (this.elements.sessionStatus) this.elements.sessionStatus.innerText = "Pausado...";
+            if (this.elements.btnPauseResume) this.elements.btnPauseResume.innerText = "Continuar";
+            if (this.elements.btnMiniGames) this.elements.btnMiniGames.style.display = "none";
             this.elements.character.className = `${avatarClass} idle`;
         } else if (mode === 'break') {
-            this.elements.sessionStatus.innerText = "Descansando...";
-            this.elements.btnStart.style.display = "none";
-            this.elements.activeActions.style.display = "flex";
-            this.elements.btnPauseResume.style.display = "none";
-            this.elements.btnStop.innerText = "Pular Pausa";
-            this.elements.btnMiniGames.style.display = "block";
+            if (this.elements.sessionStatus) this.elements.sessionStatus.innerText = "Descansando...";
+            if (this.elements.btnStart) this.elements.btnStart.style.display = "none";
+            if (this.elements.activeActions) this.elements.activeActions.style.display = "flex";
+            if (this.elements.btnPauseResume) this.elements.btnPauseResume.style.display = "none";
+            if (this.elements.btnStop) this.elements.btnStop.innerText = "Pular Pausa";
+            if (this.elements.btnMiniGames) this.elements.btnMiniGames.style.display = "block";
             this.elements.character.className = `${avatarClass} idle`;
         }
     },
 
     showFloatingText: function(text, type = 'xp') {
+        if (!this.elements.feedbackLayer) return;
         const floatEl = document.createElement('div');
-        floatEl.innerText = text; floatEl.className = `floating-text ${type}`;
+        floatEl.innerText = text; 
+        floatEl.className = `floating-text ${type}`;
         this.elements.feedbackLayer.appendChild(floatEl);
         setTimeout(() => floatEl.remove(), 2000);
     },
@@ -165,6 +263,7 @@ const UI = {
     },
 
     showModal: function(title, message, buttons) {
+        if (!this.elements.modalOverlay) return;
         this.elements.modalTitle.innerText = title;
         this.elements.modalMessage.innerText = message;
         this.elements.modalButtons.innerHTML = ''; 
@@ -174,7 +273,7 @@ const UI = {
             btn.innerText = btnInfo.text;
             btn.className = `btn ${btnInfo.class || 'primary'}`;
             btn.onclick = () => {
-                AudioFX.click();
+                if (typeof AudioFX !== 'undefined' && AudioFX.click) AudioFX.click();
                 this.elements.modalOverlay.style.display = 'none'; 
                 if (btnInfo.onClick) btnInfo.onClick(); 
             };
@@ -183,12 +282,18 @@ const UI = {
         this.elements.modalOverlay.style.display = 'flex'; 
     },
     
-    toggleSettings: function(show) { this.elements.settingsModal.style.display = show ? 'flex' : 'none'; },
-    toggleStats: function(show) { this.elements.statsModal.style.display = show ? 'flex' : 'none'; },
-    toggleProfile: function(show) { this.elements.profileModal.style.display = show ? 'flex' : 'none'; },
-    toggleShop: function(show) { this.elements.shopModal.style.display = show ? 'flex' : 'none'; },
+    toggleSettings: function(show) { if (this.elements.settingsModal) this.elements.settingsModal.style.display = show ? 'flex' : 'none'; },
+    toggleStats: function(show) { if (this.elements.statsModal) this.elements.statsModal.style.display = show ? 'flex' : 'none'; },
+    toggleProfile: function(show) { if (this.elements.profileModal) this.elements.profileModal.style.display = show ? 'flex' : 'none'; },
+    toggleShop: function(show) { if (this.elements.shopModal) this.elements.shopModal.style.display = show ? 'flex' : 'none'; },
     toggleAchievements: function(show, gameState) {
         if (show && gameState) { this.renderAchievements(gameState); }
-        this.elements.achievementsModal.style.display = show ? 'flex' : 'none';
+        if (this.elements.achievementsModal) this.elements.achievementsModal.style.display = show ? 'flex' : 'none';
     }
 };
+
+// Event Listeners Globais para Arrastar e Soltar (Suporte para Mouse e Touch/Celular)
+document.addEventListener('mousemove', (e) => UI.handleDrag(e));
+document.addEventListener('mouseup', () => UI.stopDrag());
+document.addEventListener('touchmove', (e) => UI.handleDrag(e), { passive: false });
+document.addEventListener('touchend', () => UI.stopDrag());

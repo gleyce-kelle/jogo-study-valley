@@ -8,7 +8,7 @@ const Storage = {
         totalStudyMinutes: 0,
         sessionsCompleted: 0,
         highestSession: 0,
-        avatarId: 1, // 1, 2 ou 3
+        avatarId: 1, 
         settings: {
             studyMinutes: 25,
             breakMinutes: 5,
@@ -19,7 +19,8 @@ const Storage = {
         },
         achievements: [],
         inventory: [],
-        equippedItems: [], // <- NOVAS CAMADAS DE SALVAMENTO DE MÓVEIS
+        equippedItems: [], 
+        furniturePositions: {},
         unlockedRewards: []
     },
 
@@ -30,7 +31,8 @@ const Storage = {
             return {
                 ...this.defaultState,
                 ...parsed,
-                settings: { ...this.defaultState.settings, ...(parsed.settings || {}) }
+                settings: { ...this.defaultState.settings, ...(parsed.settings || {}) },
+                furniturePositions: { ...this.defaultState.furniturePositions, ...(parsed.furniturePositions || {}) }
             };
         }
         return { ...this.defaultState };
