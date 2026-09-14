@@ -2,7 +2,13 @@ const Shop = {
     catalog: [
         { id: 'mesa_1', name: 'Mesa de Estudo', img: 'assets/images/mesa-estudo_1.png', price: 0, type: 'furniture', layer: 'layer-base' },
         { id: 'estante_1', name: 'Estante Clássica', img: 'assets/images/estante_1.png', price: 0, type: 'furniture', layer: 'layer-base' },
-        { id: 'planta_1', name: 'Planta Pequena', img: 'assets/images/planta_1.png', price: 0, type: 'furniture', layer: 'layer-surface' }
+        { id: 'planta_1', name: 'Planta Pequena', img: 'assets/images/planta_1.png', price: 0, type: 'furniture', layer: 'layer-surface' },
+        { id: 'furniture_cama_1', name: 'Cama Confortável', img: 'assets/images/cama_1.png', price: 150, type: 'furniture', layer: 'layer-base' },
+        { id: 'furniture_guarda_roupa_1', name: 'Guarda-Roupa', img: 'assets/images/guarda-roupa_1.png', price: 120, type: 'furniture', layer: 'layer-base' },
+        { id: 'furniture_mesa_canto_1', name: 'Mesa de Canto', img: 'assets/images/mesa-canto_1.png', price: 40, type: 'furniture', layer: 'layer-surface' },
+        { id: 'furniture_tapete_1', name: 'Tapete Felpudo', img: 'assets/images/tapete_1.png', price: 60, type: 'furniture', layer: 'layer-base' },
+        { id: 'furniture_abajur_1', name: 'Abajur Clássico', img: 'assets/images/abajur_1.png', price: 35, type: 'furniture', layer: 'layer-surface' },
+        { id: 'furniture_decoracao_1', name: 'Quadro Decorativo', img: 'assets/images/decoracao_1.png', price: 45, type: 'furniture', layer: 'layer-surface' }
     ],
 
     init: function() {
