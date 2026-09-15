@@ -12,16 +12,13 @@ const Shop = {
     ],
 
     init: function() {
-        if (!Game.state.inventory) Game.state.inventory = [];
-        if (!Game.state.equippedItems) Game.state.equippedItems = [];
-        if (!Game.state.furniturePositions) Game.state.furniturePositions = {};
-        
-        this.catalog.forEach(item => {
-            if (item.price === 0 && !Game.state.inventory.includes(item.id)) {
-                Game.state.inventory.push(item.id);
-            }
-        });
-        Storage.save(Game.state);
+        // Inicialização segura: Apenas cria as variáveis caso elas não existam,
+        // mas NÃO força nenhum salvamento prematuro que possa resetar o jogo.
+        if (typeof Game !== 'undefined' && Game.state) {
+            if (!Game.state.inventory) Game.state.inventory = [];
+            if (!Game.state.equippedItems) Game.state.equippedItems = [];
+            if (!Game.state.furniturePositions) Game.state.furniturePositions = {};
+        }
     },
 
     renderShop: function() {
@@ -30,8 +27,16 @@ const Shop = {
         grid.innerHTML = '';
 
         this.catalog.forEach(item => {
-            const isOwned = Game.state.inventory.includes(item.id);
-            const isEquipped = Game.state.equippedItems.includes(item.id);
+            // ⚠️ MODO DE TESTE ATIVADO: Diz para a interface que você já possui todos os itens.
+            // Para voltar as compras normais, comente a linha abaixo e descomente a original.
+            
+            const isOwned = true; // <-- LINHA DE TESTE (Tudo liberado para uso)
+            // const isOwned = Game.state.inventory.includes(item.id); // <-- LINHA ORIGINAL (Requer compra)
+
+            // Verificação de segurança para não travar o jogo se o save ainda estiver carregando
+            const isEquipped = (typeof Game !== 'undefined' && Game.state && Game.state.equippedItems) 
+                ? Game.state.equippedItems.includes(item.id) 
+                : false;
 
             const card = document.createElement('div');
             card.className = 'shop-item';
@@ -57,14 +62,16 @@ const Shop = {
     },
 
     toggleEquip: function(itemId) {
+        if (!Game || !Game.state) return;
+        
         const index = Game.state.equippedItems.indexOf(itemId);
         
         if (index > -1) {
             Game.state.equippedItems.splice(index, 1); 
         } else {
             Game.state.equippedItems.push(itemId); 
+            if (!Game.state.furniturePositions) Game.state.furniturePositions = {};
             if (!Game.state.furniturePositions[itemId]) {
-                // Posiciona no centro por padrão (atrás do avatar)
                 Game.state.furniturePositions[itemId] = { x: 50, y: 50 }; 
             }
         }
@@ -87,7 +94,7 @@ const Shop = {
 
     buyItem: function(itemId) {
         const item = this.catalog.find(i => i.id === itemId);
-        if (!item) return;
+        if (!item || !Game || !Game.state) return;
 
         if (Game.state.coins >= item.price) {
             Game.state.coins -= item.price;
@@ -99,7 +106,38 @@ const Shop = {
                 UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
             }
         } else {
-            alert("Moedas insuficientes!");
+            this.showAlert("Moedas insuficientes para comprar este item!");
         }
+    },
+
+    showAlert: function(message) {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.zIndex = '9999'; 
+
+        const box = document.createElement('div');
+        box.className = 'panel modal-box';
+        
+        const title = document.createElement('h2');
+        title.innerText = 'Aviso';
+        title.style.marginBottom = '10px';
+        title.style.color = '#c62828'; 
+        
+        const text = document.createElement('p');
+        text.innerText = message;
+        text.style.fontSize = '24px';
+        text.style.marginBottom = '20px';
+        
+        const btn = document.createElement('button');
+        btn.className = 'btn danger';
+        btn.innerText = 'OK';
+        btn.onclick = () => document.body.removeChild(overlay);
+        
+        box.appendChild(title);
+        box.appendChild(text);
+        box.appendChild(btn);
+        overlay.appendChild(box);
+        
+        document.body.appendChild(overlay);
     }
 };
