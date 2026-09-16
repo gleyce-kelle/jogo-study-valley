@@ -85,8 +85,19 @@
             <h2>A Forja da Concentração</h2>
             <div class="minigame-container" style="margin-top: 15px;">
                 <p style="margin-bottom: 15px;">Pressione <kbd>ESPAÇO</kbd> ou toque no botão quando o cursor estiver na zona verde!</p>
-                <div class="forja-ui"><div id="forja-target" class="forja-target"></div><div id="forja-cursor" class="forja-cursor"></div></div>
-                <div class="forja-status" style="margin: 15px 0; font-size: 1.5rem; color: #f1c40f;"><span>Progresso da Peça: </span><span id="forja-score">0 / 5</span></div>
+                
+                <!-- Barra de Timing -->
+                <div class="forja-ui">
+                    <div id="forja-target" class="forja-target"></div>
+                    <div id="forja-cursor" class="forja-cursor"></div>
+                </div>
+
+                <!-- Cenário Visual da Forja -->
+                <div class="forja-stage">
+                    <div class="forja-status"><span>Progresso da Peça: </span><span id="forja-score">0 / 5</span></div>
+                    <img src="assets/mini-games/forja-martelo.png" id="forja-martelo" class="forja-martelo" alt="Martelo da Forja">
+                </div>
+
                 <button id="btn-hit-forja" class="btn primary" style="width: 100%; padding: 10px; font-size: 1.2rem;">BATER O MARTELO!</button>
             </div>
             <div class="modal-actions" style="margin-top: 20px;"><button id="close-forja-btn" class="btn danger">Sair do Mini-game</button></div>

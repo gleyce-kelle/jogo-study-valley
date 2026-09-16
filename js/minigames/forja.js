@@ -15,8 +15,9 @@ const ForjaGame = {
         this.cursorEl = document.getElementById('forja-cursor');
         this.scoreEl = document.getElementById('forja-score');
         this.btnHit = document.getElementById('btn-hit-forja');
+        this.marteloEl = document.getElementById('forja-martelo');
         
-        // Estilo de fallback via JS (garantia caso o CSS falte)
+        // Estilo de fallback via JS
         const forjaUi = document.querySelector('.forja-ui');
         if(forjaUi) {
             forjaUi.style.position = 'relative';
@@ -44,7 +45,7 @@ const ForjaGame = {
             this.cursorEl.style.left = '0%';
         }
 
-        // Criar botão INICIAR dinamicamente para não precisar mexer no index.html
+        // Criar botão INICIAR dinamicamente para manter fluxo existente
         this.btnStart = document.createElement('button');
         this.btnStart.className = 'btn warning';
         this.btnStart.style.width = '100%';
@@ -53,10 +54,9 @@ const ForjaGame = {
         this.btnStart.style.marginBottom = '10px';
         this.btnStart.innerText = 'INICIAR JOGO';
         
-        // Insere o botão INICIAR antes do botão de bater
         if (this.btnHit && this.btnHit.parentNode) {
             this.btnHit.parentNode.insertBefore(this.btnStart, this.btnHit);
-            this.btnHit.style.display = 'none'; // Esconde BATER O MARTELO no início
+            this.btnHit.style.display = 'none';
         }
 
         this.btnStart.addEventListener('click', () => this.start());
@@ -65,7 +65,6 @@ const ForjaGame = {
         // Suporte para barra de espaço
         document.addEventListener('keydown', (e) => {
             const modalForja = document.getElementById('modal-forja');
-            // Só executa se o modal estiver visível e a tecla for ESPAÇO
             if (e.code === 'Space' && modalForja && modalForja.style.display !== 'none') {
                 e.preventDefault(); 
                 if (this.isActive) {
@@ -127,10 +126,24 @@ const ForjaGame = {
         this.animationFrameId = requestAnimationFrame(() => this.loop());
     },
 
+    triggerHammerAnimation: function() {
+        if (!this.marteloEl) {
+            this.marteloEl = document.getElementById('forja-martelo');
+        }
+        if (this.marteloEl) {
+            this.marteloEl.classList.remove('animar-batida');
+            void this.marteloEl.offsetWidth; // Força reflow no navegador para reiniciar a animação CSS
+            this.marteloEl.classList.add('animar-batida');
+        }
+    },
+
     hit: function() {
         if (!this.isActive) return;
         
-        this.isActive = false; // Pausa a animação para mostrar feedback
+        this.isActive = false; // Pausa a barra para dar feedback visual
+        
+        // Executa a animação de batida do martelo
+        this.triggerHammerAnimation();
         
         // Avalia se o cursor está dentro da zona verde
         if (this.cursorPos >= this.targetMin && this.cursorPos <= (this.targetMax + 1)) {
@@ -142,7 +155,7 @@ const ForjaGame = {
             if (this.score >= this.maxScore) {
                 this.win();
             } else {
-                this.speed += 0.3; // Aumenta a velocidade progressivamente
+                this.speed += 0.3; // Aumenta a velocidade
                 setTimeout(() => {
                     this.isActive = true;
                     this.loop();
@@ -169,12 +182,10 @@ const ForjaGame = {
         this.stop();
         if (window.AudioFX) AudioFX.levelUp(); 
         
-        // Pequena recompensa
         if (window.Game && window.Storage && window.UI) {
             Game.state.coins += 2;
             Game.state.xp += 5;
             
-            // Verifica se subiu de level com a XP do mini-game
             while (Game.state.xp >= Game.getXPForNextLevel()) {
                 Game.state.level++;
             }
@@ -184,7 +195,6 @@ const ForjaGame = {
             UI.showFloatingText('+5 XP', 'xp');
             setTimeout(() => UI.showFloatingText('+2 Moedas', 'coin'), 500);
             
-            // Atualiza a barra de XP da interface principal
             UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
         }
         
@@ -192,7 +202,6 @@ const ForjaGame = {
     }
 };
 
-// Expõe globalmente para o app.js conseguir parar o jogo quando o tempo da pausa acabar
 window.ForjaGame = ForjaGame;
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             Storage.save(Game.state);
             UI.elements.btnSaveFurniture.style.display = 'none';
-            UI.showFloatingText('Decoração salva!', 'xp');
+            UI.showFloatingText('Decoracao salva!', 'xp');
             AudioFX.coin(); 
         });
     }
@@ -63,13 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const secondsStudied = Timer.totalDuration - Timer.timeRemaining;
             const minutesStudied = Math.floor(secondsStudied / 60);
 
-            let msg = "Deseja abortar? " + (minutesStudied > 0 ? `\nReceberá +${minutesStudied} XP.` : "");
-            UI.showModal("Abortar Missão", msg, [
+            let msg = "Deseja abortar? " + (minutesStudied > 0 ? `\nRecebera +${minutesStudied} XP.` : "");
+            UI.showModal("Abortar Missao", msg, [
                 { text: "Sim", class: "danger", onClick: () => {
                     Timer.stop();
                     minutesStudied > 0 ? processRewards(minutesStudied, true) : resetToIdle();
                 }},
-                { text: "Não", class: "primary", onClick: () => {} }
+                { text: "Nao", class: "primary", onClick: () => {} }
             ]);
         } else {
             Timer.stop();
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (btnStartGrimorio) {
                 btnStartGrimorio.style.display = 'block';
-                btnStartGrimorio.innerText = 'INICIAR RESTAURAÇÃO';
+                btnStartGrimorio.innerText = 'INICIAR RESTAURACAO';
             }
             if (menuModal) menuModal.style.display = 'flex';
         });
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 AudioFX.levelUp();
                 UI.triggerLevelUpAnimation();
-                UI.showFloatingText(`NOVO NÍVEL!`, 'level');
+                UI.showFloatingText(`NOVO NIVEL!`, 'level');
                 setTimeout(() => {
                     AudioFX.coin();
                     UI.showFloatingText(`+${reward.coinsGained} Moedas`, 'coin');
@@ -315,9 +315,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let title = wasAborted ? "Abortada" : "Concluída!";
+        let title = wasAborted ? "Abortada" : "Concluida!";
         let msg = `Ganhos: ${reward.xpGained} XP.`;
-        if (reward.levelUps > 0) msg += `\nLvl ${Game.state.level} alcançado! (+${reward.coinsGained} moedas)`;
+        
+        if (reward.bonusXP > 0) {
+            msg += `\n(Bonus Mente Clara: +${reward.bonusXP} XP)`;
+        }
+        
+        if (reward.levelUps > 0) msg += `\nLvl ${Game.state.level} alcancado! (+${reward.coinsGained} moedas)`;
 
         if (!wasAborted) {
             UI.showModal(title, msg, [

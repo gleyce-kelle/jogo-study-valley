@@ -1,17 +1,23 @@
 window.GrimorioGame = {
     container: null,
-    onComplete: null, // Callback que avisa o app.js da vitória
+    onComplete: null,
 
     selectedPieceId: null,
     gridState: [],
     placedPieces: [],
+    gridSize: 8,
 
-    // As 4 peças foram desenhadas milimetricamente para formar um 4x4
+    // Nova paleta de cores: "Cozy RPG Gemstones & Earth Tones"
     piecesData: [
-        { id: 1, color: '#8e44ad', symbol: 'ᛦ', shape: [[1, 1, 1, 1]] }, // Linha reta
-        { id: 2, color: '#e67e22', symbol: 'ᛯ', shape: [[1, 1, 1], [0, 0, 1]] }, // L deitado
-        { id: 3, color: '#2ecc71', symbol: 'ᚣ', shape: [[1, 1], [1, 1]] }, // Quadrado
-        { id: 4, color: '#e74c3c', symbol: 'ᛤ', shape: [[0, 1], [0, 1], [1, 1]] } // L em pé invertido
+        { id: 1, color: '#593c7a', symbol: 'ᛦ', shape: [[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]] }, // Ametista (Roxo rústico)
+        { id: 2, color: '#a23b3c', symbol: 'ᛯ', shape: [[1,1],[1,1],[1,1],[1,1]] },               // Rubi Envelhecido (Vermelho escuro)
+        { id: 3, color: '#2d5a27', symbol: 'ᚣ', shape: [[1,1],[1,1],[1,1],[1,1]] },               // Musgo da Floresta (Verde profundo)
+        { id: 4, color: '#c96f41', symbol: 'ᛤ', shape: [[1,1],[1,1]] },                           // Cobre (Laranja terroso)
+        { id: 5, color: '#34627d', symbol: 'ᛥ', shape: [[1,1,1],[1,0,0],[1,0,0]] },               // Água Profunda (Azul pálido)
+        { id: 6, color: '#227068', symbol: 'ᛨ', shape: [[1,0,0,0],[1,1,1,1]] },                   // Malaquita (Verde-azulado escuro)
+        { id: 7, color: '#474f63', symbol: 'ᛩ', shape: [[1,1,1,1]] },                             // Ardósia (Cinza chumbo)
+        { id: 8, color: '#c49c3b', symbol: 'ᛪ', shape: [[1,1,1,1]] },                             // Ouro Velho (Mostarda)
+        { id: 9, color: '#7c2a39', symbol: '᛫', shape: [[1,1,1,1,1],[1,1,1,1,1]] }                // Vinho/Bordô
     ],
 
     init: function() {
@@ -20,12 +26,10 @@ window.GrimorioGame = {
 
     start: function(onCompleteCallback) {
         if (!this.container) this.init();
-        this.onComplete = onCompleteCallback; // Salva o callback
+        this.onComplete = onCompleteCallback; 
 
-        // Reseta o estado
-        this.gridState = [
-            [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]
-        ];
+        this.gridState = Array(this.gridSize).fill().map(() => Array(this.gridSize).fill(0));
+        
         this.placedPieces = [];
         this.selectedPieceId = null;
 
@@ -41,7 +45,6 @@ window.GrimorioGame = {
     },
 
     clickCell: function(r, c) {
-        // Se clicar em uma peça já colocada, remove ela do tabuleiro
         if (this.gridState[r][c] !== 0) {
             const pieceId = this.gridState[r][c];
             this.removePiece(pieceId);
@@ -49,7 +52,6 @@ window.GrimorioGame = {
             return;
         }
 
-        // Se tem peça selecionada, tenta encaixar
         if (this.selectedPieceId) {
             let piece = this.piecesData.find(p => p.id === this.selectedPieceId);
             if (this.canPlace(piece, r, c)) {
@@ -64,8 +66,8 @@ window.GrimorioGame = {
     },
 
     removePiece: function(id) {
-        for(let i=0; i<4; i++) {
-            for(let j=0; j<4; j++) {
+        for(let i = 0; i < this.gridSize; i++) {
+            for(let j = 0; j < this.gridSize; j++) {
                 if(this.gridState[i][j] === id) this.gridState[i][j] = 0;
             }
         }
@@ -74,13 +76,13 @@ window.GrimorioGame = {
     },
 
     canPlace: function(piece, startR, startC) {
-        for(let i=0; i<piece.shape.length; i++) {
-            for(let j=0; j<piece.shape[i].length; j++) {
+        for(let i = 0; i < piece.shape.length; i++) {
+            for(let j = 0; j < piece.shape[i].length; j++) {
                 if(piece.shape[i][j] === 1) {
                     let targetR = startR + i;
                     let targetC = startC + j;
-                    if(targetR < 0 || targetR >= 4 || targetC < 0 || targetC >= 4) return false; // Saiu da borda
-                    if(this.gridState[targetR][targetC] !== 0) return false; // Sobrepôs outra peça
+                    if(targetR < 0 || targetR >= this.gridSize || targetC < 0 || targetC >= this.gridSize) return false; 
+                    if(this.gridState[targetR][targetC] !== 0) return false; 
                 }
             }
         }
@@ -88,8 +90,8 @@ window.GrimorioGame = {
     },
 
     placePiece: function(piece, startR, startC) {
-        for(let i=0; i<piece.shape.length; i++) {
-            for(let j=0; j<piece.shape[i].length; j++) {
+        for(let i = 0; i < piece.shape.length; i++) {
+            for(let j = 0; j < piece.shape[i].length; j++) {
                 if(piece.shape[i][j] === 1) {
                     this.gridState[startR + i][startC + j] = piece.id;
                 }
@@ -104,7 +106,7 @@ window.GrimorioGame = {
             setTimeout(() => {
                 if(window.AudioFX && window.AudioFX.levelUp) window.AudioFX.levelUp();
                 this.showVictoryScreen();
-                if (typeof this.onComplete === 'function') this.onComplete(); // Avisa o app.js
+                if (typeof this.onComplete === 'function') this.onComplete(); 
             }, 400);
         }
     },
@@ -112,7 +114,7 @@ window.GrimorioGame = {
     showVictoryScreen: function() {
         this.container.innerHTML = `
             <div class="grimorio-victory">
-                <h3 style="font-size: 24px; color:#2ecc71; margin-bottom:10px;">✨ Grimório Restaurado! ✨</h3>
+                <h3 style="font-size: 24px; color:#2ecc71; margin-bottom:10px;"> Grimório Restaurado! </h3>
                 <p style="color: #fff; font-size: 16px;">Você conjurou o <strong style="color:#f1c40f;">Feitiço da Mente Clara</strong>!</p>
                 <p style="font-size: 14px; color:#bdc3c7; margin-top:10px;">A próxima sessão renderá +20% de XP.</p>
             </div>
@@ -127,8 +129,8 @@ window.GrimorioGame = {
         this.container.innerHTML = html;
         
         const boardEl = document.getElementById('g-board');
-        for(let r=0; r<4; r++) {
-            for(let c=0; c<4; c++) {
+        for(let r = 0; r < this.gridSize; r++) {
+            for(let c = 0; c < this.gridSize; c++) {
                 let cell = document.createElement('div');
                 cell.className = 'grimorio-cell';
                 let val = this.gridState[r][c];
@@ -136,6 +138,7 @@ window.GrimorioGame = {
                     let piece = this.piecesData.find(p => p.id === val);
                     cell.style.backgroundColor = piece.color;
                     cell.innerText = piece.symbol;
+                    cell.style.borderColor = "transparent"; /* Remove a borda da célula base quando preenchida */
                 }
                 cell.onclick = () => this.clickCell(r, c);
                 boardEl.appendChild(cell);

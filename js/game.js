@@ -18,7 +18,15 @@ const Game = {
     getCoinsForLevel: function(newLevel) { return LEVEL_CONFIG.baseCoins + ((newLevel - 1) * LEVEL_CONFIG.coinIncrement); },
 
     addReward: function(minutesStudied, isCompletedSession) {
-        const xpGained = Math.floor(minutesStudied); 
+        let xpGained = Math.floor(minutesStudied); 
+        let bonusXP = 0;
+        
+        if (isCompletedSession && this.state.xpMultiplier > 1) {
+            bonusXP = Math.ceil(xpGained * (this.state.xpMultiplier - 1));
+            xpGained += bonusXP;
+            
+            this.state.xpMultiplier = 1;
+        }
         
         if (xpGained > 0) {
             this.state.xp += xpGained;
@@ -31,7 +39,12 @@ const Game = {
         const levelUpData = this.checkLevelUp();
         Storage.save(this.state); 
         
-        return { xpGained, levelUps: levelUpData.levelsGained, coinsGained: levelUpData.coinsGained };
+        return { 
+            xpGained, 
+            bonusXP, 
+            levelUps: levelUpData.levelsGained, 
+            coinsGained: levelUpData.coinsGained 
+        };
     },
 
     checkLevelUp: function() {
