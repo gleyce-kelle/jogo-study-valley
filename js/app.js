@@ -140,18 +140,36 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSelectGrimorio.addEventListener('click', () => {
             if (menuModal) menuModal.style.display = 'none';
             if (modalGrimorio) modalGrimorio.style.display = 'flex';
+            
+            if (Game.state.xpMultiplier > 1) {
+                btnStartGrimorio.innerText = 'FEITICO ATIVO';
+                btnStartGrimorio.disabled = true;
+                btnStartGrimorio.style.opacity = '0.5';
+                btnStartGrimorio.style.cursor = 'not-allowed';
+            } else {
+                btnStartGrimorio.innerText = 'INICIAR RESTAURACAO';
+                btnStartGrimorio.disabled = false;
+                btnStartGrimorio.style.opacity = '1';
+                btnStartGrimorio.style.cursor = 'pointer';
+            }
         });
     }
 
     if (btnStartGrimorio) {
         btnStartGrimorio.addEventListener('click', () => {
+            if (Game.state.xpMultiplier > 1) return; 
+
             if (window.GrimorioGame && typeof window.GrimorioGame.start === 'function') {
                 btnStartGrimorio.style.display = 'none'; 
                 window.GrimorioGame.start(() => {
                     Game.state.xpMultiplier = 1.2; 
+                    Storage.save(Game.state); 
                     setTimeout(() => {
                         btnStartGrimorio.style.display = 'block';
-                        btnStartGrimorio.innerText = 'JOGAR NOVAMENTE';
+                        btnStartGrimorio.innerText = 'FEITICO ATIVO';
+                        btnStartGrimorio.disabled = true;
+                        btnStartGrimorio.style.opacity = '0.5';
+                        btnStartGrimorio.style.cursor = 'not-allowed';
                     }, 2000);
                 });
             }
@@ -166,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (btnStartGrimorio) {
                 btnStartGrimorio.style.display = 'block';
-                btnStartGrimorio.innerText = 'INICIAR RESTAURACAO';
             }
             if (menuModal) menuModal.style.display = 'flex';
         });

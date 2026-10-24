@@ -158,7 +158,7 @@
 
 .grimorio-victory {
     text-align: center;
-    padding: 20px;
+    padding: 25px 20px;
     background: rgba(46, 204, 113, 0.15);
     border: 2px solid #2ecc71;
     border-radius: 8px;
@@ -178,4 +178,41 @@
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     pointer-events: none;
+}
+
+/* =========================================
+   INDICADOR DE ESCUDO DA EXPEDIÇÃO
+========================================= */
+.expedicao-shield-indicator {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(44, 62, 80, 0.85);
+    border: 2px solid #f1c40f;
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #f1c40f;
+    font-size: 14px;
+    font-family: 'VT323', monospace;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    animation: shield-pulse 1.5s infinite alternate;
+}
+
+@keyframes shield-pulse {
+    0% { transform: scale(1); filter: brightness(1); }
+    100% { transform: scale(1.05); filter: brightness(1.2); }
+}
+
+/* =========================================
+   AJUSTE DE TEXTO DO BOTÃO DA FORJA
+========================================= */
+.forja-status-btn {
+    line-height: 1.2;
+    text-align: center;
+    word-break: break-word;
+    white-space: normal;
 }

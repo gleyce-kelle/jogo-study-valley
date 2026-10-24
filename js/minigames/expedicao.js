@@ -2,6 +2,7 @@ window.ExpedicaoGame = {
     container: null,
     scoreEl: null,
     btnStart: null,
+    shieldIndicatorEl: null,
     isActive: false,
     animationId: null,
     score: 0,
@@ -10,17 +11,14 @@ window.ExpedicaoGame = {
     jumpPower: -10,
     entities: [],
     frameCount: 0,
-    
-    // Nova variável para ajustar a altura do chão. 
-    // Aumente ou diminua este valor se precisar alinhar mais para cima ou para baixo.
     floorOffset: 25, 
 
     init: function() {
         this.container = document.getElementById('expedicao-container');
         this.scoreEl = document.getElementById('expedicao-score');
         this.btnStart = document.getElementById('btn-start-expedicao');
+        this.shieldIndicatorEl = document.getElementById('expedicao-shield-indicator');
 
-        // Controles de Pulo (Espaço ou Clique no container)
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && this.isActive) {
                 e.preventDefault();
@@ -56,15 +54,21 @@ window.ExpedicaoGame = {
         
         if (this.scoreEl) this.scoreEl.innerText = '0';
         if (this.btnStart) this.btnStart.style.display = 'none';
-        
-        this.container.innerHTML = ''; // Limpa o container totalmente
 
-        // Configura o visual de fundo da Floresta
+        // Atualiza a referência e visibilidade do indicador de escudo
+        this.shieldIndicatorEl = document.getElementById('expedicao-shield-indicator');
+        if (this.shieldIndicatorEl) {
+            if (window.Game && window.Game.state && window.Game.state.hasShield) {
+                this.shieldIndicatorEl.style.display = 'flex';
+            } else {
+                this.shieldIndicatorEl.style.display = 'none';
+            }
+        }
+
         this.container.style.background = "url('assets/mini-games/expedicao-background.png') center bottom / cover no-repeat";
         this.container.style.border = "none";
         this.container.style.boxShadow = "inset 0 0 10px rgba(0, 0, 0, 0.6)";
 
-        // Calcula a posição Y baseada no offset do chão
         const floorY = (this.container.clientHeight || 200) - this.player.height - this.floorOffset;
         
         this.player.y = floorY;
@@ -76,8 +80,6 @@ window.ExpedicaoGame = {
         this.player.el.style.position = 'absolute';
         this.player.el.style.left = '30px';
         this.player.el.style.top = this.player.y + 'px';
-        
-        // Inicia com o frame 1
         this.player.el.src = 'assets/mini-games/expedicao-raposa_1.png';
         
         this.container.appendChild(this.player.el);
@@ -88,6 +90,9 @@ window.ExpedicaoGame = {
     stop: function() {
         this.isActive = false;
         cancelAnimationFrame(this.animationId);
+        if (this.shieldIndicatorEl) {
+            this.shieldIndicatorEl.style.display = 'none';
+        }
         if (this.btnStart) {
             this.btnStart.style.display = 'block';
             this.btnStart.innerText = 'INICIAR EXPEDIÇÃO!';
@@ -96,7 +101,6 @@ window.ExpedicaoGame = {
 
     jump: function() {
         const floorY = (this.container.clientHeight || 200) - this.player.height - this.floorOffset;
-        // Permite o pulo se estiver no chão ou muito próximo dele
         if (this.player.y >= floorY - 2) { 
             this.player.velocity = this.jumpPower;
         }
@@ -118,7 +122,6 @@ window.ExpedicaoGame = {
         this.player.velocity += this.gravity;
         this.player.y += this.player.velocity;
 
-        // O chão agora considera o deslocamento (floorOffset)
         const floorY = (this.container.clientHeight || 200) - this.player.height - this.floorOffset;
         let isJumping = false;
 
@@ -131,7 +134,6 @@ window.ExpedicaoGame = {
 
         this.player.el.style.top = this.player.y + 'px';
 
-        // Controle de Animação
         if (isJumping) {
             this.player.el.src = 'assets/mini-games/expedicao-raposa_3.png';
         } else {
@@ -165,7 +167,6 @@ window.ExpedicaoGame = {
             el.style.width = entity.width + 'px';
             el.style.height = entity.height + 'px';
             el.src = 'assets/mini-games/expedicao-rocha.png';
-            // Rocha alinhada com o chão compensado
             el.style.top = (cHeight - entity.height - this.floorOffset) + 'px';
         } else if (type === 'coin') {
             entity.width = 25;
@@ -173,7 +174,6 @@ window.ExpedicaoGame = {
             el.style.width = entity.width + 'px';
             el.style.height = entity.height + 'px';
             el.src = 'assets/mini-games/expedicao-moeda.png';
-            // Moedas flutuam baseadas no chão compensado
             el.style.top = (cHeight - entity.height - this.floorOffset - 40 - Math.random() * 50) + 'px';
         }
 
@@ -220,7 +220,24 @@ window.ExpedicaoGame = {
                     this.entities.splice(i, 1);
                     if(window.AudioFX && window.AudioFX.coin) window.AudioFX.coin();
                 } else if (ent.type === 'obstacle') {
-                    this.gameOver();
+                    if (window.Game && window.Game.state && window.Game.state.hasShield) {
+                        window.Game.state.hasShield = false;
+                        if (window.Storage) window.Storage.save(window.Game.state);
+
+                        if (this.shieldIndicatorEl) {
+                            this.shieldIndicatorEl.style.display = 'none';
+                        }
+
+                        this.container.removeChild(ent.el);
+                        this.entities.splice(i, 1);
+
+                        if (window.AudioFX && window.AudioFX.click) window.AudioFX.click();
+                        if (window.UI && typeof window.UI.showFloatingText === 'function') {
+                            window.UI.showFloatingText('Escudo Absorveu!', 'xp');
+                        }
+                    } else {
+                        this.gameOver();
+                    }
                 }
             }
         }
@@ -230,6 +247,10 @@ window.ExpedicaoGame = {
         this.isActive = false;
         cancelAnimationFrame(this.animationId);
         
+        if (this.shieldIndicatorEl) {
+            this.shieldIndicatorEl.style.display = 'none';
+        }
+
         const gameOverText = document.createElement('div');
         gameOverText.innerHTML = `<strong>FIM DE JOGO</strong><br><span style="font-size:16px;">Pontos: ${this.score}</span>`;
         gameOverText.style.position = 'absolute';
