@@ -1,7 +1,7 @@
 const ForjaGame = {
     isActive: false,
     score: 0,
-    maxScore: 5,
+    maxScore: 10,
     cursorPos: 0,
     direction: 1,
     speed: 1.5,
@@ -11,13 +11,16 @@ const ForjaGame = {
     targetMax: 60,
 
     init: function() {
-        this.container = document.querySelector('#modal-forja .minigame-container');
         this.targetEl = document.getElementById('forja-target');
         this.cursorEl = document.getElementById('forja-cursor');
         this.scoreEl = document.getElementById('forja-score');
         this.btnHit = document.getElementById('btn-hit-forja');
         this.marteloEl = document.getElementById('forja-martelo');
         
+        // Inicializa o placar visual imediatamente com 0 / 10 ao carregar
+        this.updateScoreUI();
+        
+        // Estilo de fallback via JS
         const forjaUi = document.querySelector('.forja-ui');
         if(forjaUi) {
             forjaUi.style.position = 'relative';
@@ -45,58 +48,43 @@ const ForjaGame = {
             this.cursorEl.style.left = '0%';
         }
 
-        // Criação ou reutilização do botão de início dinâmico
-        this.btnStart = document.getElementById('btn-start-forja');
-        if (!this.btnStart) {
-            this.btnStart = document.createElement('button');
-            this.btnStart.id = 'btn-start-forja';
-            this.btnStart.className = 'btn warning forja-status-btn';
-            this.btnStart.style.width = '100%';
-            this.btnStart.style.padding = '8px 10px';
-            this.btnStart.style.fontSize = '1.0rem';
-            this.btnStart.style.marginBottom = '10px';
-            this.btnStart.innerText = 'INICIAR JOGO';
-            
-            if (this.btnHit && this.btnHit.parentNode) {
-                this.btnHit.parentNode.insertBefore(this.btnStart, this.btnHit);
-                this.btnHit.style.display = 'none';
-            }
+        // Criar botão INICIAR dinamicamente para manter fluxo existente
+        this.btnStart = document.createElement('button');
+        this.btnStart.className = 'btn warning';
+        this.btnStart.style.width = '100%';
+        this.btnStart.style.padding = '10px';
+        this.btnStart.style.fontSize = '1.2rem';
+        this.btnStart.style.marginBottom = '10px';
+        this.btnStart.innerText = 'INICIAR JOGO';
+        
+        if (this.btnHit && this.btnHit.parentNode) {
+            this.btnHit.parentNode.insertBefore(this.btnStart, this.btnHit);
+            this.btnHit.style.display = 'none';
         }
 
-        this.btnStart.onclick = () => this.start();
-        if (this.btnHit) this.btnHit.onclick = () => this.hit();
+        this.btnStart.addEventListener('click', () => this.start());
+        this.btnHit.addEventListener('click', () => this.hit());
         
+        // Suporte para barra de espaço
         document.addEventListener('keydown', (e) => {
             const modalForja = document.getElementById('modal-forja');
             if (e.code === 'Space' && modalForja && modalForja.style.display !== 'none') {
                 e.preventDefault(); 
                 if (this.isActive) {
                     this.hit();
-                } else if (this.btnStart.style.display !== 'none' && !this.btnStart.disabled) {
+                } else if (this.btnStart.style.display !== 'none') {
                     this.start();
                 }
             }
         });
 
-        const closeBtn = document.getElementById('close-forja-btn');
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                this.stop();
-                document.getElementById('modal-forja').style.display = 'none';
-                const menuModal = document.getElementById('modal-minigames-menu');
-                if (menuModal) menuModal.style.display = 'flex';
-            };
-        }
+        // Reseta o jogo quando fechar o modal
+        document.getElementById('close-forja-btn').addEventListener('click', () => {
+            this.stop();
+        });
     },
 
     start: function() {
-        if (!this.container) this.init();
-
-        if (window.Game && window.Game.state && window.Game.state.hasShield) {
-            this.showAlert("Você já tem um escudo ativo. Por favor, utilize-o na Expedição do Familiar.");
-            return;
-        }
-
         this.isActive = true;
         this.score = 0;
         this.cursorPos = 0;
@@ -104,8 +92,8 @@ const ForjaGame = {
         this.speed = 1.5;
         this.updateScoreUI();
         
-        if (this.btnStart) this.btnStart.style.display = 'none';
-        if (this.btnHit) this.btnHit.style.display = 'block';
+        this.btnStart.style.display = 'none';
+        this.btnHit.style.display = 'block';
         
         this.loop();
     },
@@ -116,6 +104,13 @@ const ForjaGame = {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
         }
+        if (this.btnStart && this.btnHit) {
+            this.btnStart.style.display = 'block';
+            this.btnStart.innerText = "JOGAR NOVAMENTE";
+            this.btnHit.style.display = 'none';
+        }
+        this.score = 0;
+        this.updateScoreUI();
     },
 
     loop: function() {
@@ -131,9 +126,7 @@ const ForjaGame = {
             this.direction = 1;
         }
         
-        if (this.cursorEl) {
-            this.cursorEl.style.left = this.cursorPos + '%';
-        }
+        this.cursorEl.style.left = this.cursorPos + '%';
         
         this.animationFrameId = requestAnimationFrame(() => this.loop());
     },
@@ -144,7 +137,7 @@ const ForjaGame = {
         }
         if (this.marteloEl) {
             this.marteloEl.classList.remove('animar-batida');
-            void this.marteloEl.offsetWidth; 
+            void this.marteloEl.offsetWidth; // Força reflow no navegador para reiniciar a animação CSS
             this.marteloEl.classList.add('animar-batida');
         }
     },
@@ -152,10 +145,14 @@ const ForjaGame = {
     hit: function() {
         if (!this.isActive) return;
         
-        this.isActive = false; 
+        this.isActive = false; // Pausa a barra para dar feedback visual
+        
+        // Executa a animação de batida do martelo
         this.triggerHammerAnimation();
         
+        // Avalia se o cursor está dentro da zona verde
         if (this.cursorPos >= this.targetMin && this.cursorPos <= (this.targetMax + 1)) {
+            // Acerto!
             this.score++;
             this.updateScoreUI();
             if (window.AudioFX) AudioFX.playTone(800, 'square', 0.1, 0.5); 
@@ -163,13 +160,14 @@ const ForjaGame = {
             if (this.score >= this.maxScore) {
                 this.win();
             } else {
-                this.speed += 0.3; 
+                this.speed += 0.2; // Aumento gradual e ajustado da velocidade
                 setTimeout(() => {
                     this.isActive = true;
                     this.loop();
                 }, 500);
             }
         } else {
+            // Erro!
             if (window.AudioFX) AudioFX.playTone(200, 'sawtooth', 0.2, 0.5); 
             
             setTimeout(() => {
@@ -180,6 +178,9 @@ const ForjaGame = {
     },
 
     updateScoreUI: function() {
+        if (!this.scoreEl) {
+            this.scoreEl = document.getElementById('forja-score');
+        }
         if (this.scoreEl) {
             this.scoreEl.innerText = `${this.score} / ${this.maxScore}`;
         }
@@ -192,7 +193,6 @@ const ForjaGame = {
         if (window.Game && window.Storage && window.UI) {
             Game.state.coins += 2;
             Game.state.xp += 5;
-            Game.state.hasShield = true; 
             
             while (Game.state.xp >= Game.getXPForNextLevel()) {
                 Game.state.level++;
@@ -202,39 +202,11 @@ const ForjaGame = {
             
             UI.showFloatingText('+5 XP', 'xp');
             setTimeout(() => UI.showFloatingText('+2 Moedas', 'coin'), 500);
-            setTimeout(() => UI.showFloatingText('Escudo Forjado!', 'level'), 1000);
             
             UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
         }
-
-        // Renderiza a tela de vitória no mesmo padrão visual do Grimório Fragmentado com os textos solicitados
-        if (this.container) {
-            this.container.innerHTML = `
-                <div class="grimorio-victory">
-                    <h3 style="font-size: 24px; color:#2ecc71; margin-bottom:10px;">Escudo Forjado!</h3>
-                    <p style="color: #fff; font-size: 16px;">Você equipou o <strong style="color:#f1c40f;">Escudo de Ferro</strong>!</p>
-                    <p style="font-size: 14px; color:#bdc3c7; margin-top:10px;">Utilize-o durante a Expedição do Familiar.</p>
-                </div>
-            `;
-        }
-
-        if (this.btnHit) this.btnHit.style.display = 'none';
-        if (this.btnStart) {
-            this.btnStart.style.display = 'block';
-            this.btnStart.innerText = "Escudo Forjado! Utilize-o no mini-game A Expedição do Familiar antes de tentar novamente.";
-            this.btnStart.disabled = true;
-            this.btnStart.style.opacity = '0.7';
-        }
-    },
-
-    showAlert: function(message) {
-        if (window.UI && typeof window.UI.showModal === 'function') {
-            window.UI.showModal("Aviso da Forja", message, [
-                { text: "Entendi", class: "primary", onClick: () => {} }
-            ]);
-        } else {
-            alert(message);
-        }
+        
+        this.btnStart.innerText = "PEÇA FORJADA! (JOGAR NOVAMENTE)";
     }
 };
 

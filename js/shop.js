@@ -12,8 +12,6 @@ const Shop = {
     ],
 
     init: function() {
-        // Inicialização segura: Apenas cria as variáveis caso elas não existam,
-        // mas NÃO força nenhum salvamento prematuro que possa resetar o jogo.
         if (typeof Game !== 'undefined' && Game.state) {
             if (!Game.state.inventory) Game.state.inventory = [];
             if (!Game.state.equippedItems) Game.state.equippedItems = [];
@@ -27,13 +25,9 @@ const Shop = {
         grid.innerHTML = '';
 
         this.catalog.forEach(item => {
-            // ⚠️ MODO DE TESTE ATIVADO: Diz para a interface que você já possui todos os itens.
-            // Para voltar as compras normais, comente a linha abaixo e descomente a original.
-            
-            const isOwned = true; // <-- LINHA DE TESTE (Tudo liberado para uso)
-            // const isOwned = Game.state.inventory.includes(item.id); // <-- LINHA ORIGINAL (Requer compra)
+            // Verificação real no inventário do jogador (exige compra com moedas)
+            const isOwned = (Game && Game.state && Game.state.inventory) ? Game.state.inventory.includes(item.id) : false;
 
-            // Verificação de segurança para não travar o jogo se o save ainda estiver carregando
             const isEquipped = (typeof Game !== 'undefined' && Game.state && Game.state.equippedItems) 
                 ? Game.state.equippedItems.includes(item.id) 
                 : false;
@@ -98,6 +92,7 @@ const Shop = {
 
         if (Game.state.coins >= item.price) {
             Game.state.coins -= item.price;
+            if (!Game.state.inventory) Game.state.inventory = [];
             Game.state.inventory.push(itemId);
             Storage.save(Game.state);
             if (typeof AudioFX !== 'undefined' && AudioFX.coin) AudioFX.coin();

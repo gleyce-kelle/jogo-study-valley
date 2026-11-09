@@ -9,7 +9,6 @@ const Storage = {
         sessionsCompleted: 0,
         highestSession: 0,
         avatarId: 1, 
-        hasShield: false, // Novo estado para controlar se o escudo da Forja está ativo
         settings: {
             studyMinutes: 25,
             breakMinutes: 5,
@@ -32,7 +31,6 @@ const Storage = {
             return {
                 ...this.defaultState,
                 ...parsed,
-                hasShield: parsed.hasShield !== undefined ? parsed.hasShield : false,
                 settings: { ...this.defaultState.settings, ...(parsed.settings || {}) },
                 furniturePositions: { ...this.defaultState.furniturePositions, ...(parsed.furniturePositions || {}) }
             };
