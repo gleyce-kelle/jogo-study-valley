@@ -65,7 +65,7 @@ const UI = {
     renderAvatar: function(targetElement, avatarId) {
         if (!targetElement) return;
         const isStudying = targetElement.classList.contains('studying');
-        targetElement.className = `sprite avatar-${avatarId} ${isStudying ? 'studying' : 'idle'}`;
+        targetElement.className = `sprite avatar-${avatarId} ${isStudying ? 'idle' : 'idle'}`;
     },
 
     dragState: {
@@ -183,13 +183,14 @@ const UI = {
             const card = document.createElement('div');
             card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
 
+            // ✨ Removido do HMTL abaixo:
             card.innerHTML = `
                 <div class="achievement-icon-wrapper">
                     <img src="${ach.icon}" alt="${ach.title}">
                     ${!isUnlocked ? '<span class="lock-overlay">🔒</span>' : ''}
                 </div>
                 <div class="achievement-info">
-                    <div class="achievement-title">${ach.title} ${isUnlocked ? '✨' : ''}</div>
+                    <div class="achievement-title">${ach.title}</div>
                     <div class="achievement-desc">${ach.desc}</div>
                     <div class="achievement-progress">${isUnlocked ? '✓ Concluído!' : ach.getProgress(gameState)}</div>
                 </div>

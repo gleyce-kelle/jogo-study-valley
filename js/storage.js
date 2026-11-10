@@ -9,6 +9,7 @@ const Storage = {
         sessionsCompleted: 0,
         highestSession: 0,
         avatarId: 1, 
+        hasShield: false, // <-- Novo estado para o Escudo da Forja
         settings: {
             studyMinutes: 25,
             breakMinutes: 5,

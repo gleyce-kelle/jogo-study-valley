@@ -85,6 +85,10 @@ const ForjaGame = {
     },
 
     start: function() {
+        // Limpa o aviso de vitória se ele existir
+        const existingMsg = document.getElementById('forja-victory-msg');
+        if (existingMsg) existingMsg.remove();
+
         this.isActive = true;
         this.score = 0;
         this.cursorPos = 0;
@@ -155,7 +159,7 @@ const ForjaGame = {
             // Acerto!
             this.score++;
             this.updateScoreUI();
-            if (window.AudioFX) AudioFX.playTone(800, 'square', 0.1, 0.5); 
+            if (typeof AudioFX !== 'undefined') AudioFX.playTone(800, 'square', 0.1, 0.5); 
             
             if (this.score >= this.maxScore) {
                 this.win();
@@ -168,7 +172,7 @@ const ForjaGame = {
             }
         } else {
             // Erro!
-            if (window.AudioFX) AudioFX.playTone(200, 'sawtooth', 0.2, 0.5); 
+            if (typeof AudioFX !== 'undefined') AudioFX.playTone(200, 'sawtooth', 0.2, 0.5); 
             
             setTimeout(() => {
                 this.isActive = true;
@@ -188,12 +192,16 @@ const ForjaGame = {
 
     win: function() {
         this.stop();
-        if (window.AudioFX) AudioFX.levelUp(); 
+        if (typeof AudioFX !== 'undefined') AudioFX.levelUp(); 
         
-        if (window.Game && window.Storage && window.UI) {
+        // Verifica de forma segura as variáveis globais e atribui as recompensas
+        if (typeof Game !== 'undefined' && typeof Storage !== 'undefined' && typeof UI !== 'undefined') {
             Game.state.coins += 2;
             Game.state.xp += 5;
             
+            // Adiciona o status de Escudo obtido!
+            Game.state.hasShield = true;
+
             while (Game.state.xp >= Game.getXPForNextLevel()) {
                 Game.state.level++;
             }
@@ -205,6 +213,41 @@ const ForjaGame = {
             
             UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
         }
+
+        // Criando feedback visual em camadas: Painel bege sólido com a caixa verde dentro
+        const existing = document.getElementById('forja-victory-msg');
+        if (existing) existing.remove();
+
+        // 1. Painel Fundo (Bege, borda de madeira e sombra projetada)
+        const victoryWrapper = document.createElement('div');
+        victoryWrapper.id = 'forja-victory-msg';
+        victoryWrapper.className = 'panel'; 
+        victoryWrapper.style.position = 'absolute';
+        victoryWrapper.style.top = '50%';
+        victoryWrapper.style.left = '50%';
+        victoryWrapper.style.transform = 'translate(-50%, -50%)';
+        victoryWrapper.style.zIndex = '10';
+        victoryWrapper.style.width = '85%'; 
+        victoryWrapper.style.boxSizing = 'border-box';
+        victoryWrapper.style.padding = '8px'; // Espaço interno do painel
+        victoryWrapper.style.boxShadow = '0 6px 15px rgba(0,0,0,0.6)'; // Sombra pop-up
+        
+        // 2. Caixa Verde (Translúcida com a mensagem)
+        const innerGreenBox = document.createElement('div');
+        innerGreenBox.className = 'grimorio-victory'; 
+        innerGreenBox.style.margin = '0';
+        innerGreenBox.style.padding = '15px';
+        
+        innerGreenBox.innerHTML = `
+            <h3 style="font-size: 24px; color:#2ecc71; margin-bottom:10px; font-family: 'VT323', monospace;"> 🛡️ Escudo Forjado! </h3>
+            <p style="color: #fff; font-size: 18px; line-height: 1.2; font-family: 'VT323', monospace;">Utilize-o no mini-game <br><strong style="color:#f1c40f;">"A Expedição do Familiar"</strong>!</p>
+            <p style="font-size: 16px; color:#bdc3c7; margin-top:10px; font-family: 'VT323', monospace;">Absorve 1 impacto de obstáculo.</p>
+        `;
+        
+        victoryWrapper.appendChild(innerGreenBox);
+        
+        const forjaStage = document.querySelector('.forja-stage');
+        if (forjaStage) forjaStage.appendChild(victoryWrapper);
         
         this.btnStart.innerText = "PEÇA FORJADA! (JOGAR NOVAMENTE)";
     }

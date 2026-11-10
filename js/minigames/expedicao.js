@@ -11,6 +11,7 @@ window.ExpedicaoGame = {
     entities: [],
     frameCount: 0,
     floorOffset: 25, 
+    hasShield: false, // <-- Controle do escudo interno do minigame
 
     init: function() {
         this.container = document.getElementById('expedicao-container');
@@ -73,6 +74,18 @@ window.ExpedicaoGame = {
         this.player.el.src = 'assets/mini-games/expedicao-raposa_1.png';
         
         this.container.appendChild(this.player.el);
+
+        // --- Lógica de Injeção do Escudo ---
+        if (typeof Game !== 'undefined' && Game.state && Game.state.hasShield) {
+            this.hasShield = true;
+            const shieldUI = document.createElement('div');
+            shieldUI.id = 'expedicao-shield-ui';
+            shieldUI.className = 'expedicao-shield-indicator';
+            shieldUI.innerHTML = '🛡️ Escudo Ativo';
+            this.container.appendChild(shieldUI);
+        } else {
+            this.hasShield = false;
+        }
 
         this.loop();
     },
@@ -205,9 +218,28 @@ window.ExpedicaoGame = {
                     if (this.scoreEl) this.scoreEl.innerText = this.score;
                     this.container.removeChild(ent.el);
                     this.entities.splice(i, 1);
-                    if(window.AudioFX && window.AudioFX.coin) window.AudioFX.coin();
+                    if(typeof AudioFX !== 'undefined' && AudioFX.coin) AudioFX.coin();
                 } else if (ent.type === 'obstacle') {
-                    this.gameOver();
+                    // --- Lógica de Consumo do Escudo ---
+                    if (this.hasShield) {
+                        this.hasShield = false;
+                        
+                        if (typeof Game !== 'undefined' && Game.state) {
+                            Game.state.hasShield = false;
+                            if(typeof Storage !== 'undefined') Storage.save(Game.state);
+                        }
+                        
+                        const shieldUI = document.getElementById('expedicao-shield-ui');
+                        if (shieldUI) shieldUI.remove();
+                        
+                        this.container.removeChild(ent.el);
+                        this.entities.splice(i, 1);
+
+                        if(typeof AudioFX !== 'undefined' && AudioFX.playTone) AudioFX.playTone(300, 'sawtooth', 0.2, 0.5);
+
+                    } else {
+                        this.gameOver();
+                    }
                 }
             }
         }
@@ -217,44 +249,57 @@ window.ExpedicaoGame = {
         this.isActive = false;
         cancelAnimationFrame(this.animationId);
         
-        const gameOverText = document.createElement('div');
-        gameOverText.innerHTML = `<strong>FIM DE JOGO</strong><br><span style="font-size:16px;">Pontos: ${this.score}</span>`;
-        gameOverText.style.position = 'absolute';
-        gameOverText.style.top = '50%';
-        gameOverText.style.left = '50%';
-        gameOverText.style.transform = 'translate(-50%, -50%)';
-        gameOverText.style.color = '#fff';
-        gameOverText.style.fontSize = '24px';
-        gameOverText.style.textAlign = 'center';
-        gameOverText.style.textShadow = '2px 2px 4px #000';
-        gameOverText.style.fontFamily = "'VT323', monospace";
-        this.container.appendChild(gameOverText);
+        let moedasGanhas = 0;
 
-        if (window.Game && window.Game.state) {
-            // Regra de recompensa: 1 moeda a cada 100 pontos (< 100 pontos = 0 moedas)
-            const moedasGanhas = Math.floor(this.score / 100);
+        // --- Concede a recompensa no State ---
+        if (typeof Game !== 'undefined' && Game.state) {
+            moedasGanhas = Math.floor(this.score / 100);
             if (moedasGanhas > 0) {
-                window.Game.state.coins += moedasGanhas;
-                if(window.Storage) window.Storage.save(window.Game.state);
+                Game.state.coins += moedasGanhas;
+                if(typeof Storage !== 'undefined') Storage.save(Game.state);
                 
-                // Atualiza o HUD superior de moedas em tempo real
-                if(window.UI && typeof window.UI.updateStats === 'function') {
-                    window.UI.updateStats(window.Game.state, window.Game.getXPForNextLevel(), window.Game.getTotalXPForLevel(window.Game.state.level));
+                if(typeof UI !== 'undefined' && typeof UI.updateStats === 'function') {
+                    UI.updateStats(Game.state, Game.getXPForNextLevel(), Game.getTotalXPForLevel(Game.state.level));
                 }
-                
-                const rewardText = document.createElement('div');
-                rewardText.innerText = `+${moedasGanhas} Moeda${moedasGanhas > 1 ? 's' : ''}!`;
-                rewardText.style.position = 'absolute';
-                rewardText.style.top = '75%';
-                rewardText.style.left = '50%';
-                rewardText.style.transform = 'translate(-50%, -50%)';
-                rewardText.style.color = '#f1c40f';
-                rewardText.style.fontSize = '20px';
-                rewardText.style.fontFamily = "'VT323', monospace";
-                rewardText.style.textShadow = '1px 1px 0px #000';
-                this.container.appendChild(rewardText);
             }
         }
+
+        // --- Criação do Pop-up Central de Fim de Jogo ---
+        const gameOverPanel = document.createElement('div');
+        gameOverPanel.className = 'panel'; 
+        gameOverPanel.style.position = 'absolute';
+        gameOverPanel.style.top = '50%';
+        gameOverPanel.style.left = '50%';
+        gameOverPanel.style.transform = 'translate(-50%, -50%)';
+        gameOverPanel.style.zIndex = '20';
+        gameOverPanel.style.width = '85%';
+        gameOverPanel.style.textAlign = 'center';
+        gameOverPanel.style.boxShadow = '0 6px 15px rgba(0,0,0,0.6)';
+        gameOverPanel.style.padding = '15px';
+        gameOverPanel.style.boxSizing = 'border-box';
+        
+        let htmlContent = `
+            <h2 style="color: #c62828; font-size: 28px; margin-bottom: 5px; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">FIM DE JOGO</h2>
+            <p style="font-size: 22px; font-weight: bold; margin-bottom: 15px;">Pontuação: ${this.score}</p>
+        `;
+
+        if (moedasGanhas > 0) {
+            htmlContent += `
+                <div class="recompensas" style="margin-bottom: 5px; justify-content: center;">
+                    <div class="recompensa-item" style="font-size: 24px; padding: 5px 15px;">
+                        <span class="icone">💰</span> 
+                        <span>+${moedasGanhas}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            htmlContent += `
+                <p style="font-size: 16px; color: #555;">(Alcance 100 pontos para ganhar moedas)</p>
+            `;
+        }
+
+        gameOverPanel.innerHTML = htmlContent;
+        this.container.appendChild(gameOverPanel);
 
         setTimeout(() => {
             if (this.btnStart) {
