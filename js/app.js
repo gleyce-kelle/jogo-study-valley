@@ -233,6 +233,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-achievements').addEventListener('click', () => UI.toggleAchievements(true, Game.state));
     document.getElementById('btn-close-achievements').addEventListener('click', () => UI.toggleAchievements(false));
 
+    // NOVO: Conexão do botão Sobre e Modal
+    if (UI.elements.btnAbout) {
+        UI.elements.btnAbout.addEventListener('click', () => UI.toggleAbout(true));
+    }
+    const btnCloseAbout = document.getElementById('btn-close-about');
+    if (btnCloseAbout) {
+        btnCloseAbout.addEventListener('click', () => UI.toggleAbout(false));
+    }
+
     document.getElementById('btn-settings').addEventListener('click', () => UI.toggleSettings(true));
     document.getElementById('btn-close-settings').addEventListener('click', () => {
         Game.state.settings = {

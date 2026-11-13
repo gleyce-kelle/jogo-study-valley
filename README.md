@@ -1,4 +1,4 @@
-# 🌾 Study Valley
+# 📚 Study Valley
 
 > Uma ferramenta de produtividade gamificada no estilo *cozy RPG*, que transforma suas sessões de estudo em uma jornada de evolução, conquistas e decoração.
 
@@ -39,7 +39,7 @@ Marcos progressivos que oferecem recompensas em XP e moedas ao atingir grandes c
 
 Durante o tempo de descanso do Pomodoro, você pode relaxar e acumular bônus jogando três mini-games exclusivos:
 
-1. 🏃 **Expedição:** Um minijogo estilo *endless runner* onde o seu pet pula obstáculos e coleta moedas pelo caminho.
+1. 🦊 **Expedição:** Um minijogo estilo *endless runner* onde o seu pet pula obstáculos e coleta moedas pelo caminho.
 2. 🔨 **Forja:** Um jogo de precisão (*timing*) onde acertar a zona ideal do martelo garante recompensas extras.
 3. 📜 **Grimório:** Um quebra-cabeça 4x4 onde o encaixe correto de peças mágicas ativa o *Feitiço da Mente Clara*, concedendo bônus de XP na sessão seguinte.
 

@@ -141,7 +141,6 @@ button:focus-visible, input:focus-visible {
 
 .furniture-item {
     position: absolute;
-    /* Tamanho padrão reduzido por segurança para novos itens */
     max-width: 20%;
     max-height: 25%;
     object-fit: contain;
@@ -153,63 +152,15 @@ button:focus-visible, input:focus-visible {
     transform: translate(-50%, -50%);
 }
 
-/* --- AJUSTE DE PROPORÇÕES DOS MÓVEIS --- */
-/* O Avatar tem 45% de altura. Estas medidas são baseadas nisso: */
-
-/* Mesa: Altura da cintura do avatar, formato mais largo */
-.furniture-item[src*="mesa"] {
-    max-height: 30%;
-    max-width: 28%;
-}
-
-/* Estante: Quase da altura do avatar */
-.furniture-item[src*="estante"] {
-    max-height: 30%;
-    max-width: 15%;
-}
-
-/* Planta: Objeto de decoração pequeno */
-.furniture-item[src*="planta"] {
-    max-height: 15%;
-    max-width: 10%;
-}
-
-/* Cama: Larga e baixa */
-.furniture-item[src*="cama"] {
-    max-height: 35%;
-    max-width: 45%;
-}
-
-/* Guarda-roupa: Alto e consideravelmente largo */
-.furniture-item[src*="guarda-roupa"] {
-    max-height: 42%;
-    max-width: 30%;
-}
-
-/* Tapete: Muito largo e achatado (chão). Z-index 1 para ficar abaixo da mesa/cama */
-.furniture-item[src*="tapete"] {
-    max-height: 20%;
-    max-width: 55%;
-    z-index: 1 !important; 
-}
-
-/* Mesa de canto: Pequena e baixa */
-.furniture-item[src*="mesa-canto"] {
-    max-height: 15%;
-    max-width: 15%;
-}
-
-/* Abajur: Objeto decorativo pequeno */
-.furniture-item[src*="abajur"] {
-    max-height: 13%;
-    max-width: 10%;
-}
-
-/* Decoração: Quadros, posters (itens de parede) */
-.furniture-item[src*="decoracao"] {
-    max-height: 15%;
-    max-width: 18%;
-}
+.furniture-item[src*="mesa"] { max-height: 30%; max-width: 28%; }
+.furniture-item[src*="estante"] { max-height: 30%; max-width: 15%; }
+.furniture-item[src*="planta"] { max-height: 15%; max-width: 10%; }
+.furniture-item[src*="cama"] { max-height: 35%; max-width: 45%; }
+.furniture-item[src*="guarda-roupa"] { max-height: 42%; max-width: 30%; }
+.furniture-item[src*="tapete"] { max-height: 20%; max-width: 55%; z-index: 1 !important; }
+.furniture-item[src*="mesa-canto"] { max-height: 15%; max-width: 15%; }
+.furniture-item[src*="abajur"] { max-height: 13%; max-width: 10%; }
+.furniture-item[src*="decoracao"] { max-height: 15%; max-width: 18%; }
 
 .furniture-item:active {
     cursor: grabbing;
@@ -242,7 +193,6 @@ button:focus-visible, input:focus-visible {
 .btn.primary { background-color: var(--color-primary); color: white; }
 .btn.warning { background-color: var(--color-warning); color: white; }
 .btn.danger { background-color: var(--color-danger); color: white; }
-
 .btn.btn-rpg-destaque { background-color: #673ab7; color: #ffd54f; border-color: #311b92; text-shadow: 1px 1px 0px #000; }
 
 .xp-section { text-align: center; padding: 10px; }
@@ -250,8 +200,33 @@ button:focus-visible, input:focus-visible {
 .xp-bar-fill { height: 100%; background-color: var(--color-xp-fill); width: 0%; transition: width 0.5s ease-out; }
 .xp-text { font-weight: bold; font-size: 22px; }
 
+/* Botão Sobre */
+.footer-about { text-align: center; margin-top: 5px; }
+.btn-text-only {
+    background: none; border: none; font-family: 'VT323', monospace;
+    font-size: 20px; color: var(--color-panel); text-decoration: underline;
+    cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    transition: color 0.2s;
+}
+.btn-text-only:hover { color: #fbc02d; }
+
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-box { width: 90%; max-width: 380px; text-align: center; display: flex; flex-direction: column; gap: 12px; }
+
+/* Modal Sobre O Projeto */
+.about-box { max-width: 480px; }
+.about-content { max-height: 380px; overflow-y: auto; text-align: left; padding: 15px; font-size: 20px; padding-right: 5px; }
+/* Alterado para herdar a cor escura (var(--color-text)) e sem sombra no h3 */
+.about-content h3 { color: var(--color-text); margin-top: 15px; margin-bottom: 5px; text-shadow: none; font-size: 26px; }
+.about-content h3:first-child { margin-top: 0; }
+.about-content h4 { color: #558b2f; margin-top: 15px; margin-bottom: 5px; font-size: 22px; text-shadow: 1px 1px 0px rgba(255,255,255,0.4); }
+.about-content p { margin-bottom: 10px; line-height: 1.2; }
+.about-content ul { list-style-type: none; margin-left: 5px; margin-bottom: 15px; }
+.about-content li { margin-bottom: 6px; line-height: 1.2; position: relative; padding-left: 15px; }
+.about-content li::before { content: "•"; color: #c62828; font-weight: bold; position: absolute; left: 0; top: 0; }
+.about-content::-webkit-scrollbar { width: 6px; }
+.about-content::-webkit-scrollbar-track { background: var(--color-xp-bg); }
+.about-content::-webkit-scrollbar-thumb { background: var(--color-panel-border); }
 
 .shop-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;

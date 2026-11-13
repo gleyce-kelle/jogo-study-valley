@@ -30,6 +30,10 @@ const UI = {
         shopModal: document.getElementById('shop-modal'),
         achievementsModal: document.getElementById('achievements-modal'),
         achievementsList: document.getElementById('achievements-list'),
+        
+        // NOVO: Adicionado controles do Sobre
+        btnAbout: document.getElementById('btn-about'),
+        aboutModal: document.getElementById('about-modal'),
 
         achievementUnlockedModal: document.getElementById('achievement-unlocked-modal'),
         unlockedAchName: document.getElementById('unlocked-achievement-name'),
@@ -94,7 +98,6 @@ const UI = {
                 el.dataset.itemId = id;
 
                 const pos = itemPositions[id] || { x: 50, y: 50 };
-                // Garante suporte tanto para posições em % quanto antigas em px
                 const posX = (pos.x !== undefined && pos.x <= 100) ? `${pos.x}%` : (pos.x ? `${pos.x}px` : '50%');
                 const posY = (pos.y !== undefined && pos.y <= 100) ? `${pos.y}%` : (pos.y ? `${pos.y}px` : '50%');
                 
@@ -121,7 +124,6 @@ const UI = {
         this.dragState.element = element;
         this.dragState.itemId = itemId;
         
-        // Offset a partir do centro do elemento para movimento suave
         this.dragState.offsetX = clientX - (rect.left + rect.width / 2);
         this.dragState.offsetY = clientY - (rect.top + rect.height / 2);
 
@@ -143,21 +145,18 @@ const UI = {
         if (!parent) return;
         const parentRect = parent.getBoundingClientRect();
         
-        // Calcula a nova posição relativa em porcentagem (%)
         let posX = clientX - parentRect.left - this.dragState.offsetX;
         let posY = clientY - parentRect.top - this.dragState.offsetY;
 
         let pctX = (posX / parentRect.width) * 100;
         let pctY = (posY / parentRect.height) * 100;
 
-        // Limita o movimento para manter o móvel dentro do cenário
         pctX = Math.min(Math.max(pctX, 5), 95);
         pctY = Math.min(Math.max(pctY, 10), 90);
 
         this.dragState.element.style.left = `${pctX}%`;
         this.dragState.element.style.top = `${pctY}%`;
 
-        // Atualiza a posição no estado do jogo
         if (this.dragState.itemId && typeof Game !== 'undefined' && Game.state) {
             if (!Game.state.furniturePositions) Game.state.furniturePositions = {};
             Game.state.furniturePositions[this.dragState.itemId] = { x: pctX, y: pctY };
@@ -183,7 +182,6 @@ const UI = {
             const card = document.createElement('div');
             card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
 
-            // ✨ Removido do HMTL abaixo:
             card.innerHTML = `
                 <div class="achievement-icon-wrapper">
                     <img src="${ach.icon}" alt="${ach.title}">
@@ -301,10 +299,13 @@ const UI = {
     toggleAchievements: function(show, gameState) {
         if (show && gameState) { this.renderAchievements(gameState); }
         if (this.elements.achievementsModal) this.elements.achievementsModal.style.display = show ? 'flex' : 'none';
+    },
+    // NOVO: Função para o modal "Sobre"
+    toggleAbout: function(show) { 
+        if (this.elements.aboutModal) this.elements.aboutModal.style.display = show ? 'flex' : 'none'; 
     }
 };
 
-// Event Listeners Globais para Arrastar e Soltar (Suporte para Mouse e Touch/Celular)
 document.addEventListener('mousemove', (e) => UI.handleDrag(e));
 document.addEventListener('mouseup', () => UI.stopDrag());
 document.addEventListener('touchmove', (e) => UI.handleDrag(e), { passive: false });
