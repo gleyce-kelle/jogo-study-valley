@@ -55,8 +55,8 @@ button:focus-visible, input:focus-visible {
     font-weight: bold;
 }
 
-.stats-group { display: flex; gap: 10px; flex-wrap: wrap; }
-.menu-group { display: flex; gap: 5px; }
+.stats-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.menu-group { display: flex; gap: 5px; align-items: center; }
 
 .icon-btn {
     background: var(--color-panel-border);
@@ -66,6 +66,7 @@ button:focus-visible, input:focus-visible {
     cursor: pointer;
     padding: 5px 8px;
     border-radius: 4px;
+    touch-action: manipulation;
 }
 .icon-btn:active { transform: translateY(2px); }
 
@@ -188,6 +189,7 @@ button:focus-visible, input:focus-visible {
     text-transform: uppercase; width: 100%; flex: 1;
     min-height: 48px;
     display: flex; justify-content: center; align-items: center;
+    touch-action: manipulation;
 }
 .btn:active { box-shadow: inset 3px 3px 0px rgba(0,0,0,0.2); }
 .btn.primary { background-color: var(--color-primary); color: white; }
@@ -200,23 +202,46 @@ button:focus-visible, input:focus-visible {
 .xp-bar-fill { height: 100%; background-color: var(--color-xp-fill); width: 0%; transition: width 0.5s ease-out; }
 .xp-text { font-weight: bold; font-size: 22px; }
 
-/* Botão Sobre */
-.footer-about { text-align: center; margin-top: 5px; }
+/* Rodapé: Botão Sobre e Tag de Versão */
+.footer-about { 
+    text-align: center; 
+    margin-top: 5px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
 .btn-text-only {
     background: none; border: none; font-family: 'VT323', monospace;
     font-size: 20px; color: var(--color-panel); text-decoration: underline;
     cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     transition: color 0.2s;
+    touch-action: manipulation;
 }
 .btn-text-only:hover { color: #fbc02d; }
 
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.version-tag {
+    font-size: 16px;
+    color: rgba(212, 163, 115, 0.7);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+}
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
 .modal-box { width: 90%; max-width: 380px; text-align: center; display: flex; flex-direction: column; gap: 12px; }
 
 /* Modal Sobre O Projeto */
 .about-box { max-width: 480px; }
-.about-content { max-height: 380px; overflow-y: auto; text-align: left; padding: 15px; font-size: 20px; padding-right: 5px; }
-/* Alterado para herdar a cor escura (var(--color-text)) e sem sombra no h3 */
+.about-content { 
+    max-height: 380px; 
+    overflow-y: auto; 
+    text-align: left; 
+    padding: 15px; 
+    font-size: 20px; 
+    padding-right: 5px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
 .about-content h3 { color: var(--color-text); margin-top: 15px; margin-bottom: 5px; text-shadow: none; font-size: 26px; }
 .about-content h3:first-child { margin-top: 0; }
 .about-content h4 { color: #558b2f; margin-top: 15px; margin-bottom: 5px; font-size: 22px; text-shadow: 1px 1px 0px rgba(255,255,255,0.4); }
@@ -231,6 +256,8 @@ button:focus-visible, input:focus-visible {
 .shop-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
     max-height: 350px; overflow-y: auto; padding: 5px; margin-top: 10px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 .shop-item {
     background: rgba(255, 255, 255, 0.1); border: 2px solid var(--color-panel-border);
@@ -241,11 +268,21 @@ button:focus-visible, input:focus-visible {
 .shop-item-icon { width: 64px; height: 64px; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
 .shop-item-icon img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; }
 .shop-item-title { font-size: 16px; font-weight: bold; color: #3e2723; text-align: center; line-height: 1; height: 32px; display: flex; align-items: center; }
-.btn-equip { font-family: 'VT323', monospace; font-size: 16px; padding: 6px; border: 2px solid var(--color-panel-border); background: #fff; cursor: pointer; width: 100%; border-radius: 4px; text-transform: uppercase; }
+.btn-equip { font-family: 'VT323', monospace; font-size: 16px; padding: 6px; border: 2px solid var(--color-panel-border); background: #fff; cursor: pointer; width: 100%; border-radius: 4px; text-transform: uppercase; touch-action: manipulation; }
 .btn-equip.equipped { background: var(--color-primary); color: #fff; border-color: #33691e; }
 
 .achievements-box { max-width: 420px; }
-.achievements-list { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; padding-right: 5px; text-align: left; }
+.achievements-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    max-height: 320px; 
+    overflow-y: auto; 
+    padding-right: 5px; 
+    text-align: left;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
 .achievements-list::-webkit-scrollbar { width: 6px; }
 .achievements-list::-webkit-scrollbar-track { background: var(--color-xp-bg); }
 .achievements-list::-webkit-scrollbar-thumb { background: var(--color-panel-border); }
@@ -274,14 +311,21 @@ button:focus-visible, input:focus-visible {
 .option-group { display: flex; flex-direction: column; gap: 5px; }
 .option-group label { font-weight: bold; font-size: 20px; }
 .option-buttons { display: flex; gap: 5px; justify-content: center; }
-.opt-btn { font-family: 'VT323', monospace; font-size: 16px; padding: 6px; border: 2px solid var(--color-panel-border); background: #fff; cursor: pointer; }
+.opt-btn { font-family: 'VT323', monospace; font-size: 16px; padding: 6px; border: 2px solid var(--color-panel-border); background: #fff; cursor: pointer; touch-action: manipulation; }
 .opt-btn.active { background: var(--color-xp-fill); border-color: #000; font-weight: bold; }
 
-.settings-content, .stats-content { text-align: left; background: rgba(255,255,255,0.2); padding: 10px; border: 2px solid var(--color-panel-border); }
+.settings-content, .stats-content { 
+    text-align: left; 
+    background: rgba(255,255,255,0.2); 
+    padding: 10px; 
+    border: 2px solid var(--color-panel-border);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
 .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .setting-row input[type="number"] { width: 60px; font-family: 'VT323'; font-size: 20px; text-align: center; }
 
-.floating-text { position: absolute; font-size: 28px; font-weight: bold; color: white; text-shadow: 2px 2px 0px #000; animation: floatUp 2s forwards ease-out; left: 50%; transform: translateX(-50%); z-index: 20; }
+.floating-text { position: absolute; font-size: 28px; font-weight: bold; color: white; text-shadow: 2px 2px 0px #000; animation: floatUp 2s forwards ease-out; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; }
 .floating-text.xp { color: var(--color-xp-fill); }
 .floating-text.coin { color: #ffeb3b; }
 .floating-text.level { color: #64b5f6; font-size: 36px; }
@@ -290,11 +334,31 @@ button:focus-visible, input:focus-visible {
 
 @media (min-width: 1024px) { #game-container { max-width: 660px; } .time-display { font-size: 100px; } }
 @media (max-width: 768px) { #game-container { max-width: 90%; padding: 15px; } .top-bar { font-size: 20px; } }
+
 @media (max-width: 480px) {
     .time-display { font-size: 70px; margin: 10px 0; }
     .btn { font-size: 22px; padding: 12px; }
-    .stats-group { gap: 5px; flex-direction: column; align-items: flex-start; }
-    .top-bar { align-items: flex-start; }
-    .menu-group { align-self: flex-end; margin-top: -30px; }
+    .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px;
+    }
+    .stats-group { 
+        width: 100%;
+        justify-content: space-between;
+        gap: 5px; 
+    }
+    .menu-group { 
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0;
+    }
 }
-@media (max-width: 360px) { .time-display { font-size: 55px; } #active-actions { flex-direction: column; gap: 5px; } .panel { padding: 10px; } .btn { font-size: 20px; } }
+@media (max-width: 360px) { 
+    .time-display { font-size: 55px; } 
+    #active-actions { flex-direction: column; gap: 5px; } 
+    .panel { padding: 10px; } 
+    .btn { font-size: 20px; } 
+    .stats-group { font-size: 18px; }
+}

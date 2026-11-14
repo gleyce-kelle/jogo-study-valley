@@ -25,7 +25,6 @@ const Shop = {
         grid.innerHTML = '';
 
         this.catalog.forEach(item => {
-            // Verificação real no inventário do jogador (exige compra com moedas)
             const isOwned = (Game && Game.state && Game.state.inventory) ? Game.state.inventory.includes(item.id) : false;
 
             const isEquipped = (typeof Game !== 'undefined' && Game.state && Game.state.equippedItems) 
@@ -77,10 +76,8 @@ const Shop = {
             UI.renderFurniture(Game.state.equippedItems, this.catalog, Game.state.furniturePositions);
         }
         
-        if (typeof AudioFX !== 'undefined' && AudioFX.click) {
-            AudioFX.click();
-        }
-        
+        // Chamada manual de AudioFX.click() removida aqui para evitar som duplo
+
         if (UI.elements && UI.elements.btnSaveFurniture) {
             UI.elements.btnSaveFurniture.style.display = 'block';
         }

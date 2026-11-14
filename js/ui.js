@@ -31,7 +31,6 @@ const UI = {
         achievementsModal: document.getElementById('achievements-modal'),
         achievementsList: document.getElementById('achievements-list'),
         
-        // NOVO: Adicionado controles do Sobre
         btnAbout: document.getElementById('btn-about'),
         aboutModal: document.getElementById('about-modal'),
 
@@ -50,17 +49,14 @@ const UI = {
     },
 
     achievementsData: [
-        // Conquistas de Tempo de Estudo
         { id: '100_minutos', title: 'Estudou por 100 minutos', desc: 'Concentre-se por pelo menos 100 minutos totais.', icon: 'assets/conquistas/100_minutos.png', rewardXP: 5, rewardCoins: 5, check: (state) => state.totalStudyMinutes >= 100, getProgress: (state) => `${Math.min(state.totalStudyMinutes, 100)} / 100 min` },
         { id: '240_minutos', title: 'Estudou por 240 minutos', desc: 'Concentre-se por pelo menos 240 minutos totais.', icon: 'assets/conquistas/240_minutos.png', rewardXP: 15, rewardCoins: 15, check: (state) => state.totalStudyMinutes >= 240, getProgress: (state) => `${Math.min(state.totalStudyMinutes, 240)} / 240 min` },
         { id: '8_horas', title: 'Estudou por 8 horas', desc: 'Concentre-se por um total de 8 horas (480 minutos).', icon: 'assets/conquistas/8_horas.png', rewardXP: 30, rewardCoins: 30, check: (state) => state.totalStudyMinutes >= 480, getProgress: (state) => `${Math.min(state.totalStudyMinutes, 480)} / 480 min` },
         
-        // Conquistas de Sessões Concluídas
         { id: '10_sessoes', title: 'Estudou por 10 sessões', desc: 'Complete 10 missões de estudo.', icon: 'assets/conquistas/10_sessoes.png', rewardXP: 10, rewardCoins: 10, check: (state) => state.sessionsCompleted >= 10, getProgress: (state) => `${Math.min(state.sessionsCompleted, 10)} / 10 sessões` },
         { id: '25_sessoes', title: 'Estudou por 25 sessões', desc: 'Complete 25 missões de estudo.', icon: 'assets/conquistas/25_sessoes.png', rewardXP: 25, rewardCoins: 25, check: (state) => state.sessionsCompleted >= 25, getProgress: (state) => `${Math.min(state.sessionsCompleted, 25)} / 25 sessões` },
         { id: '50_sessoes', title: 'Estudou por 50 sessões', desc: 'Complete 50 missões de estudo.', icon: 'assets/conquistas/50_sessoes.png', rewardXP: 50, rewardCoins: 50, check: (state) => state.sessionsCompleted >= 50, getProgress: (state) => `${Math.min(state.sessionsCompleted, 50)} / 50 sessões` },
         
-        // Conquistas de Nível
         { id: 'lvl_10', title: 'Atingiu Level 10', desc: 'Alcance o Nível 10 de personagem.', icon: 'assets/conquistas/lvl_10.png', rewardXP: 100, rewardCoins: 100, check: (state) => state.level >= 10, getProgress: (state) => `Nível ${state.level} / 10` },
         { id: 'lvl_20', title: 'Atingiu Level 20', desc: 'Alcance o Nível 20 de personagem.', icon: 'assets/conquistas/lvl_20.png', rewardXP: 200, rewardCoins: 200, check: (state) => state.level >= 20, getProgress: (state) => `Nível ${state.level} / 20` },
         { id: 'lvl_30', title: 'Atingiu Level 30', desc: 'Alcance o Nível 30 de personagem.', icon: 'assets/conquistas/lvl_30.png', rewardXP: 300, rewardCoins: 300, check: (state) => state.level >= 30, getProgress: (state) => `Nível ${state.level} / 30` }
@@ -113,7 +109,7 @@ const UI = {
     },
 
     startDrag: function(e, element, itemId) {
-        if (e.type === 'touchstart') e.preventDefault();
+        if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
         
         const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
         const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
@@ -138,6 +134,10 @@ const UI = {
     handleDrag: function(e) {
         if (!this.dragState.isDragging || !this.dragState.element) return;
         
+        if (e.cancelable && e.type.startsWith('touch')) {
+            e.preventDefault();
+        }
+
         const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
         const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
         
@@ -283,7 +283,7 @@ const UI = {
             btn.innerText = btnInfo.text;
             btn.className = `btn ${btnInfo.class || 'primary'}`;
             btn.onclick = () => {
-                if (typeof AudioFX !== 'undefined' && AudioFX.click) AudioFX.click();
+                // Chamada redundante de AudioFX.click() removida
                 this.elements.modalOverlay.style.display = 'none'; 
                 if (btnInfo.onClick) btnInfo.onClick(); 
             };
@@ -300,7 +300,6 @@ const UI = {
         if (show && gameState) { this.renderAchievements(gameState); }
         if (this.elements.achievementsModal) this.elements.achievementsModal.style.display = show ? 'flex' : 'none';
     },
-    // NOVO: Função para o modal "Sobre"
     toggleAbout: function(show) { 
         if (this.elements.aboutModal) this.elements.aboutModal.style.display = show ? 'flex' : 'none'; 
     }

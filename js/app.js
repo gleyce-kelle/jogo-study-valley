@@ -40,8 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let tempAvatarId = Game.state.avatarId;
 
-    document.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('mousedown', () => AudioFX.click());
+    // --- Sistema Universal de Sons para Todos os Botões (Desktop & Mobile) ---
+    document.addEventListener('pointerdown', (e) => {
+        if (typeof AudioFX !== 'undefined' && typeof AudioFX.init === 'function') {
+            AudioFX.init();
+        }
+        const btn = e.target.closest('button, .icon-btn, .opt-btn');
+        if (btn && typeof AudioFX !== 'undefined' && typeof AudioFX.click === 'function') {
+            AudioFX.click();
+        }
     });
 
     UI.elements.btnStart.addEventListener('click', startStudySession);
@@ -54,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             Timer.pause();
             UI.setMode('paused');
-            AudioFX.click();
+            // Chamada redundante de AudioFX.click() removida
         }
     });
 
@@ -233,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-achievements').addEventListener('click', () => UI.toggleAchievements(true, Game.state));
     document.getElementById('btn-close-achievements').addEventListener('click', () => UI.toggleAchievements(false));
 
-    // NOVO: Conexão do botão Sobre e Modal
+    // Conexão do botão Sobre e Modal
     if (UI.elements.btnAbout) {
         UI.elements.btnAbout.addEventListener('click', () => UI.toggleAbout(true));
     }
@@ -256,6 +263,39 @@ document.addEventListener('DOMContentLoaded', () => {
         UI.toggleSettings(false);
         refreshTimeDisplay();
     });
+
+    // --- Lógica de Backup (Exportar / Importar Save) ---
+    const btnExportSave = document.getElementById('btn-export-save');
+    if (btnExportSave) {
+        btnExportSave.addEventListener('click', () => {
+            Storage.exportSave();
+            UI.showFloatingText('Save exportado!', 'xp');
+            if (typeof AudioFX !== 'undefined') AudioFX.coin();
+        });
+    }
+
+    const btnImportSave = document.getElementById('btn-import-save');
+    const fileImportSave = document.getElementById('file-import-save');
+    if (btnImportSave && fileImportSave) {
+        btnImportSave.addEventListener('click', () => {
+            fileImportSave.value = '';
+            fileImportSave.click();
+        });
+
+        fileImportSave.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                Storage.importSave(file, (success) => {
+                    if (success) {
+                        alert("Save importado com sucesso! O Study Valley será recarregado.");
+                        window.location.reload();
+                    } else {
+                        alert("Erro ao importar save. Verifique se o arquivo JSON selecionado é válido.");
+                    }
+                });
+            }
+        });
+    }
 
     document.getElementById('btn-stats').addEventListener('click', () => {
         document.getElementById('stat-level').innerText = Game.state.level;

@@ -48,7 +48,9 @@ window.GrimorioGame = {
         if (this.gridState[r][c] !== 0) {
             const pieceId = this.gridState[r][c];
             this.removePiece(pieceId);
-            if(window.AudioFX && window.AudioFX.click) window.AudioFX.click();
+            if (typeof AudioFX !== 'undefined' && typeof AudioFX.click === 'function') {
+                AudioFX.click();
+            }
             return;
         }
 
@@ -60,7 +62,9 @@ window.GrimorioGame = {
                 this.render();
                 this.checkWin();
             } else {
-                if(window.AudioFX && window.AudioFX.error) window.AudioFX.error();
+                if (typeof AudioFX !== 'undefined' && typeof AudioFX.error === 'function') {
+                    AudioFX.error();
+                }
             }
         }
     },
@@ -98,13 +102,17 @@ window.GrimorioGame = {
             }
         }
         this.placedPieces.push(piece.id);
-        if(window.AudioFX && window.AudioFX.coin) window.AudioFX.coin();
+        if (typeof AudioFX !== 'undefined' && typeof AudioFX.coin === 'function') {
+            AudioFX.coin();
+        }
     },
 
     checkWin: function() {
         if (this.placedPieces.length === this.piecesData.length) {
             setTimeout(() => {
-                if(window.AudioFX && window.AudioFX.levelUp) window.AudioFX.levelUp();
+                if (typeof AudioFX !== 'undefined' && typeof AudioFX.levelUp === 'function') {
+                    AudioFX.levelUp();
+                }
                 this.showVictoryScreen();
                 if (typeof this.onComplete === 'function') this.onComplete(); 
             }, 400);
@@ -138,7 +146,7 @@ window.GrimorioGame = {
                     let piece = this.piecesData.find(p => p.id === val);
                     cell.style.backgroundColor = piece.color;
                     cell.innerText = piece.symbol;
-                    cell.style.borderColor = "transparent"; /* Remove a borda da célula base quando preenchida */
+                    cell.style.borderColor = "transparent";
                 }
                 cell.onclick = () => this.clickCell(r, c);
                 boardEl.appendChild(cell);
@@ -153,7 +161,9 @@ window.GrimorioGame = {
                 pEl.onclick = () => {
                     this.selectedPieceId = (this.selectedPieceId === piece.id) ? null : piece.id;
                     this.render();
-                    if(window.AudioFX && window.AudioFX.click) window.AudioFX.click();
+                    if (typeof AudioFX !== 'undefined' && typeof AudioFX.click === 'function') {
+                        AudioFX.click();
+                    }
                 };
                 
                 piece.shape.forEach(row => {

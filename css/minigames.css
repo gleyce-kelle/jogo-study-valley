@@ -76,32 +76,32 @@
     display: grid;
     grid-template-columns: repeat(8, 30px);
     gap: 2px;
-    /* Fundo estilo madeira escura/couro */
     background: #4a3018; 
     padding: 8px;
     border-radius: 6px;
     border: 2px solid #2e1c0c;
+    box-sizing: border-box;
 }
 
 .grimorio-cell {
     width: 30px;
     height: 30px;
-    /* Células estilo bloco de madeira rústica */
     background: #734a26; 
     border: 1px solid #3d2612;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
-    color: #fdf6e3; /* Off-white/pergaminho */
+    color: #fdf6e3;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
+    touch-action: manipulation;
 }
 
 .grimorio-cell:hover {
     filter: brightness(1.2);
-    border-color: #f1c40f; /* Destaque dourado */
+    border-color: #f1c40f;
 }
 
 .grimorio-tray {
@@ -122,6 +122,7 @@
     padding: 4px;
     border-radius: 6px;
     border: 2px solid transparent;
+    touch-action: manipulation;
 }
 
 .grimorio-piece:hover {
@@ -146,9 +147,9 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: #fdf6e3; /* Off-white/pergaminho para as runas da bandeja */
+    color: #fdf6e3;
     border-radius: 3px;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.2); /* Profundidade nas peças */
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.2);
 }
 
 .grimorio-piece-cell.empty {
@@ -215,4 +216,28 @@
     text-align: center;
     word-break: break-word;
     white-space: normal;
+}
+
+/* =========================================
+   RESPONSIVIDADE DOS MINI-GAMES EM TELAS PEQUENAS (MOBILE)
+========================================= */
+@media (max-width: 420px) {
+    .grimorio-board {
+        grid-template-columns: repeat(8, 24px);
+        gap: 1px;
+        padding: 4px;
+    }
+    .grimorio-cell {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+    }
+    .grimorio-piece-cell {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+    .forja-stage {
+        height: 180px;
+    }
 }

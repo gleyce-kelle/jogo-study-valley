@@ -54,8 +54,10 @@
             <div class="xp-text">XP: <span id="xp-current-level">0</span> / <span id="xp-needed">100</span></div>
         </footer>
 
+        <!-- Rodapé: Botão Sobre e Indicador de Versão Beta -->
         <div class="footer-about">
             <button id="btn-about" class="btn-text-only">Sobre o Study Valley</button>
+            <span class="version-tag">v1.0.0 (Beta)</span>
         </div>
     </div>
 
@@ -232,6 +234,16 @@
                 <div class="setting-row"><label>Volume:</label><input type="range" id="cfg-volume" min="0.1" max="1" step="0.1"></div>
                 <div class="setting-row"><label>Pausa Automática:</label><input type="checkbox" id="cfg-auto-break"></div>
                 <div class="setting-row"><label>Sessão Automática:</label><input type="checkbox" id="cfg-auto-session"></div>
+
+                <!-- Gerenciamento de Backup (Exportar / Importar Save) -->
+                <div style="margin-top: 15px; border-top: 2px dashed var(--color-panel-border); padding-top: 10px;">
+                    <p style="font-size: 18px; margin-bottom: 8px; text-align: center; font-weight: bold;">Gerenciamento de Save</p>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-export-save" class="btn warning" style="font-size: 16px; min-height: 38px; padding: 5px;">Exportar Save</button>
+                        <button id="btn-import-save" class="btn primary" style="font-size: 16px; min-height: 38px; padding: 5px;">Importar Save</button>
+                    </div>
+                    <input type="file" id="file-import-save" style="display: none;" accept=".json">
+                </div>
             </div>
             <div class="modal-actions">
                 <button id="btn-close-settings" class="btn primary">Salvar</button>
